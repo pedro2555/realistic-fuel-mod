@@ -1,7 +1,18 @@
 /*
-Based on Ultimate Fuel Script 2.1 source code at
-https://code.google.com/p/ultimate-fuel-script/ which is developed by
-Pedro Rodrigues (prodrigues1990@gmail.com). All rights reserved.
+Copyright (c) 2013, Pedro Rodrigues <prodrigues1990@gmail.com>
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without 
+modification, are permitted provided that the following conditions are met:
+
+	- Redistributions of source code must retain the above copyright 
+	  notice, this list of conditions and the following disclaimer.
+	- Redistributions in binary form must reproduce the above copyright 
+	  notice, this list of conditions and the following disclaimer in
+	  the documentation and/or other materials provided with the distribution.
+	- Neither the name of the author nor the names of its contributors 
+	  may be used to endorse or promote products derived from this software
+	  without specific prior written permission.
 
 This is free and unencumbered software released into the public domain.
 
@@ -182,11 +193,11 @@ namespace FuelScript
             ///     
             /// All types are self explanatory. Every station of a specified type as an unique identifier,
             /// preceded by the station type keyword.
-            /// 
+            ///
             /// Each type can have up to 254 stations.
-            /// 
+            ///
             /// The first identifier is 1, the last is 255.
-            /// 
+            ///
             /// The identifiers must be consecutive (1, 2, 3, 4. NOT 1, 3, 5)
             /// </summary>
             #region Load Dueling Stations
@@ -655,7 +666,7 @@ namespace FuelScript
 
                         // CurrentVehicle.Metadata.Drain is a user defined constant, defaults to 20
                         drainPerSecond = CurrentVehicle.Metadata.Drain * CurrentVehicle.CurrentRPM / 100;
-                        // increase consumption based on engine damage 
+                        // increase consumption based on engine damage
                         drainPerSecond = drainPerSecond * ((1000 - CurrentVehicle.EngineHealth) / 1000) + drainPerSecond;
                         // actually remove the calculated value
                         CurrentVehicle.Metadata.Fuel -= drainPerSecond;
@@ -827,7 +838,7 @@ namespace FuelScript
         }
         /// <summary>
         /// Use ONLY when player is in vehicle!
-        /// 
+        ///
         /// Returns the station id, if the player is at any station valid for the vehicle type.
         /// </summary>
         /// <returns></returns>
@@ -853,7 +864,7 @@ namespace FuelScript
         }
         /// <summary>
         /// Finishes the reFuel process.
-        /// 
+        ///
         /// Debts the money from the player's money value, and allows the car to be started.
         /// </summary>
         private void FinishRefuel()
