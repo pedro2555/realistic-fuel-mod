@@ -1,4 +1,8 @@
 /*
+Based on Ultimate Fuel Script 2.1 source code at
+https://code.google.com/p/ultimate-fuel-script/ which is developed by
+Pedro Rodrigues (prodrigues1990@gmail.com). All rights reserved.
+
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
