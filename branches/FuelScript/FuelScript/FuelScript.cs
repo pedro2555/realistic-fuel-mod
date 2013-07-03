@@ -657,13 +657,14 @@ namespace FuelScript
                 #endregion
 
                 #region Fuel Draining and Vehicle Fuel Status
+                // If Niko have fuel in the vehicle.
                 if (CurrentVehicle.Metadata.Fuel > 0.0f)
                 {
+                    // Keep hazard lights turned off.
                     CurrentVehicle.HazardLightsOn = false;
+                    // Draining enabled for cars and bikes?
                     if ((CurrentVehicle.Model.isCar || CurrentVehicle.Model.isBike) && CurrentVehicle.EngineRunning && Settings.GetValueBool("CARS", "MISC", true))
                     {
-                        // Code for cars and bikes
-
                         // CurrentVehicle.Metadata.Drain is a user defined constant, defaults to 20
                         drainPerSecond = CurrentVehicle.Metadata.Drain * CurrentVehicle.CurrentRPM / 100;
                         // increase consumption based on engine damage
@@ -673,46 +674,51 @@ namespace FuelScript
                         // avoid negative values
                         CurrentVehicle.Metadata.Fuel = (CurrentVehicle.Metadata.Fuel < 0.0f) ? 0.0f : CurrentVehicle.Metadata.Fuel;
                     }
+                    // Draining enabled for helicopters?
                     else if (CurrentVehicle.Model.isHelicopter && CurrentVehicle.EngineRunning && Settings.GetValueBool("HELIS", "MISC", true))
                     {
-                        // Code for Helis
+                        // Note: 254.921568627451f
+                        // Note: 0.2 + ((speed * 0.2) / 5)
+                        // Only take in account speed when accelerate xor reverse key is pressed.
 
-                        // 254.921568627451f
-
-                        // 0.2 + ((speed * 0.2) / 5)
-                        // only take in account speed when : accelerate xor reverse key is pressed
-
+                        // GamePad disabled or unavailable? Use keyboard!
                         if (GamePad == null)
                             if (Game.isGameKeyPressed(GameKey.MoveForward))
                                 drainPerSecond = (CurrentVehicle.Metadata.Drain * (.2f + ((CurrentVehicle.Speed * .2f) / 5.0f))) / 100.0f;
                             else
                                 drainPerSecond = (CurrentVehicle.Metadata.Drain * .208f) / 100.0f;
+                        // Use the GamePad if available.
                         else if (GamePad.GetState().Gamepad.RightTrigger > 0.0f)
                             drainPerSecond = CurrentVehicle.Metadata.Drain * (((GamePad.GetState().Gamepad.RightTrigger * 100.0f) / 255.0f) / 10000.0f);
+                        // Just go with it already.
                         else
                             drainPerSecond = (CurrentVehicle.Metadata.Drain * .208f) / 100.0f;
 
+                        // Calculate the draining speed also taking engine damage to an account.
                         drainPerSecond = drainPerSecond * ((1000 - CurrentVehicle.EngineHealth) / 1000.0f) + drainPerSecond;
                         CurrentVehicle.Metadata.Fuel -= drainPerSecond;
                         CurrentVehicle.Metadata.Fuel = (CurrentVehicle.Metadata.Fuel < .0f) ? .0f : CurrentVehicle.Metadata.Fuel;
                     }
+                    // Draining enabled for boats?
                     else if (CurrentVehicle.Model.isBoat && CurrentVehicle.EngineRunning && Settings.GetValueBool("BOATS", "MISC", true))
                     {
-                        // Code for boats
+                        // Note: 0.2 + ((speed * 0.2) / 5)
+                        // Only take in account speed when accelerate xor reverse key is pressed.
 
-                        // 0.2 + ((speed * 0.2) / 5)
-                        // only take in account speed when accelerate xor reverse key is pressed
+                        // GamePad disabled or unavailable? Use keyboard!
                         if (GamePad == null)
                             if (Game.isGameKeyPressed(GameKey.MoveForward) ^ Game.isGameKeyPressed(GameKey.MoveBackward))
                                 drainPerSecond = (CurrentVehicle.Metadata.Drain * (.2f + ((CurrentVehicle.Speed * .2f) / 5.0f))) / 100;
                             else
                                 drainPerSecond = (CurrentVehicle.Metadata.Drain * .208f) / 100;
+                        // Use the GamePad if available.
                         else
                             if (GamePad.GetState().Gamepad.RightTrigger > 0 ^ GamePad.GetState().Gamepad.LeftTrigger > 0)
                                 drainPerSecond = (CurrentVehicle.Metadata.Drain * (.2f + ((CurrentVehicle.Speed * .2f) / 5.0f))) / 100;
                             else
                                 drainPerSecond = (CurrentVehicle.Metadata.Drain * .208f) / 100;
 
+                        // Calculate the draining speed also taking engine damage to an account.
                         drainPerSecond = drainPerSecond * ((1000 - CurrentVehicle.EngineHealth) / 1000) + drainPerSecond;
                         CurrentVehicle.Metadata.Fuel -= drainPerSecond;
                         CurrentVehicle.Metadata.Fuel = (CurrentVehicle.Metadata.Fuel < .0f) ? .0f : CurrentVehicle.Metadata.Fuel;
@@ -721,12 +727,16 @@ namespace FuelScript
                     // Enter to reserved fuel
                     if (!isOnReserve && CurrentVehicle.Metadata.Fuel <= CurrentVehicle.Metadata.Reserve && CurrentVehicle.EngineRunning && CurrentVehicle.Speed > 2.5f)
                     {
+                        // Set as in reserve.
                         isOnReserve = true;
 
+                        // Let the player know.
                         if (Settings.GetValueBool("RESERVEDFUELTEXT", "TEXTS", true))
                         {
                             Game.DisplayText("Your vehicle is now running on reserved fuel.\n" + (((maxFuelBottleUses - fuelBottles) >= 1) ? "You have " + (maxFuelBottleUses - fuelBottles) + " emergency fuel bottle" + (((maxFuelBottleUses - fuelBottles) == 1) ? "" : "s") + " left." : "Drive to a refueling station quickly!"), 10000);
                         }
+
+                        // Log the situation.
                         Log("DrainFuel", "Player entered to reserved fuel on vehicle: " + CurrentVehicle.Name.ToString() + " with " + CurrentVehicle.Metadata.Fuel + " fuel units and " + (maxFuelBottleUses - fuelBottles) + " emergency fuel bottle" + (((maxFuelBottleUses - fuelBottles) == 1) ? "" : "s") + " left.");
 
                         // Turn screen black & white.
@@ -735,16 +745,23 @@ namespace FuelScript
                             GTA.Native.Function.Call("SET_TIMECYCLE_MODIFIER", "busted");
                         }
                     }
-                    // If else
+                    // If vehicle has fuel than reserved amount.
                     else if (CurrentVehicle.Metadata.Fuel > CurrentVehicle.Metadata.Reserve)
                     {
+                        // Then it's not on reserve... that's obvious!
                         isOnReserve = false;
                     }
                 }
+                // Oh... bad luck! No fuel?!
                 else
                 {
+                    // Stop the engine immediately!
                     CurrentVehicle.EngineRunning = false;
+
+                    // Turn hazard lights on to assist the traffic!
                     CurrentVehicle.HazardLightsOn = true;
+
+                    // Set fuel level as zero for double sure.
                     CurrentVehicle.Metadata.Fuel = 0;
 
                     // Smoking a little maybe? (only if he isn't damaged too much)
@@ -1024,7 +1041,8 @@ namespace FuelScript
             else if (e.Key == Settings.GetValueKey("BOTTLEUSEKEY", "KEYS", Keys.U))
             {
                 // If player ran out of fuel, and vehicle is stopped and the vehicle is a car or a bike.
-                if (CurrentVehicle.Metadata.Fuel == 0 && CurrentVehicle.Speed == 0.0f && (CurrentVehicle.Model.isCar || CurrentVehicle.Model.isBike))
+                
+                if (CurrentVehicle.Metadata.Fuel == 0 && CurrentVehicle.Speed == 0.0f)
                 {
                     // If player has at least one fuel bottle.
                     if ((maxFuelBottleUses - fuelBottles) >= 1)
@@ -1034,7 +1052,87 @@ namespace FuelScript
                         Wait(2000);
 
                         // Start the repair by using the fuel bottle!
-                        doVehicleRepair();
+                        // Clear tasks...
+                        Player.Character.Task.ClearAll();
+
+                        // Focus on current tasks...
+                        Player.Character.Task.AlwaysKeepTask = true;
+
+                        // Get out of vehicle.
+                        // If Niko is driving a Helicopter or a Boat we don't want to get him out to inject a fuel bottle, do we?
+                        // That would kill Niko... lol, it could be fun though :D
+                        // Added a fix for the crash when injecting fuel bottles to a bus by letting Niko do it inside!
+                        if (CurrentVehicle.Model.isCar || CurrentVehicle.Model.isBike || CurrentVehicle.Name == "BUS")
+                        {
+                            Player.Character.Task.LeaveVehicle(CurrentVehicle, true);
+                            
+                            // Let him know that Niko doing a magic!
+                            if (Settings.GetValueBool("BOTTLEUSINGTEXT", "TEXTS", true))
+                            {
+                                Game.DisplayText("You're now using one of your emergency fuel bottles on this vehicle.", 10000);
+                            }
+                            
+                            // Wait until Niko got to the position.
+                            Wait(3000);
+
+                            // Turn to the vehicle side, door side!
+                            Player.Character.Task.TurnTo(LastVehicle.Position);
+                            Wait(500);
+
+                            // Do his magic!
+                            Game.LocalPlayer.Character.Task.PlayAnimation(new AnimationSet("misstaxidepot"), "workunderbonnet", 4.0f);
+                            Wait(7200);
+                        }
+
+                        // Repair the vehicle.
+                        // Is the damage caused by low fuel running?
+                        if (LastVehicle.Metadata.NoFuelDamage)
+                        {
+                            // If so, repair the engine, not visual damage!
+                            LastVehicle.EngineHealth = 1000.0f;
+                        }
+                        // Is the damage caused by player's act?
+                        else
+                        {
+                            // If so, repair few of the damage in engine, not visual damage!
+                            LastVehicle.EngineHealth = (1000.0f - LastVehicle.EngineHealth) / 3;
+                        }
+
+                        // Give a little fuel capacity...
+                        LastVehicle.Metadata.Fuel = LastVehicle.Metadata.Reserve + (LastVehicle.Metadata.MaxTank / 10);
+                        // Not on reserve now...
+                        isOnReserve = false;
+
+                        // Startup the engine.
+                        LastVehicle.EngineRunning = true;
+                        LastVehicle.HazardLightsOn = false;
+
+                        // Get in vehicle back.
+                        // Only let get in if Niko got out in previous callout.
+                        if (LastVehicle.Model.isCar || LastVehicle.Model.isBike || LastVehicle.Name == "BUS")
+                        {
+                            Player.Character.Task.EnterVehicle(LastVehicle, VehicleSeat.Driver);
+                            Wait(2000);
+                        }
+
+                        // Let the player know...
+                        // Game.DisplayText("You injected " + Convert.ToInt32(CurrentVehicle.Metadata.Fuel) + " litre(s) of fuel to your vehicle.", 6000);
+                        Log("VehicleRepair", "Player injected " + Convert.ToInt32(CurrentVehicle.Metadata.Fuel) + " litre(s) of fuel for vehicle: " + CurrentVehicle.Name.ToString() + " with bottle " + (fuelBottles + 1) + ".");
+
+                        CurrentVehicle.Metadata.NoFuelDamage = (bool)false;
+
+                        // Cost one fuel bottle...
+                        fuelBottles += 1;
+
+                        // Reset black & white effect.
+                        if (Settings.GetValueBool("EFFECTS", "MISC", true))
+                        {
+                            GTA.Native.Function.Call("CLEAR_TIMECYCLE_MODIFIER");
+                        }
+
+                        // Hurry up, we wasted some time!
+                        Wait(600);
+                        Player.Character.SayAmbientSpeech("HURRY_UP");
                     }
                 }
             }
@@ -1074,84 +1172,6 @@ namespace FuelScript
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Do a vehicle repair animation
-        /// </summary>
-        private void doVehicleRepair()
-        {
-            // Clear tasks...
-            Player.Character.Task.ClearAll();
-
-            // Focus on current tasks...
-            Player.Character.Task.AlwaysKeepTask = true;
-
-            // Get out of vehicle.
-            Player.Character.Task.LeaveVehicle(CurrentVehicle, true);
-
-            // Let him know that Niko doing a magic!
-            if (Settings.GetValueBool("BOTTLEUSINGTEXT", "TEXTS", true))
-            {
-                Game.DisplayText("You're now using one of your emergency fuel bottles on this vehicle.", 10000);
-            }
-
-            Wait(2200);
-
-            // Turn to the vehicle side, door side!
-            Player.Character.Task.TurnTo(LastVehicle.Position);
-            Wait(500);
-
-            // Do his magic!
-            Game.LocalPlayer.Character.Task.PlayAnimation(new AnimationSet("misstaxidepot"), "workunderbonnet", 4.0f);
-            Wait(7200);
-
-            // Repair the vehicle.
-            // Is the damage caused by low fuel running?
-            if (LastVehicle.Metadata.NoFuelDamage)
-            {
-                // If so, repair the engine, not visual damage!
-                LastVehicle.EngineHealth = 1000.0f;
-            }
-            // Is the damage caused by player's act?
-            else
-            {
-                // If so, repair few of the damage in engine, not visual damage!
-                LastVehicle.EngineHealth = (1000.0f - LastVehicle.EngineHealth) / 3;
-            }
-
-            // Give a little fuel capacity...
-            LastVehicle.Metadata.Fuel = LastVehicle.Metadata.Reserve + (LastVehicle.Metadata.MaxTank / 10);
-            // Not on reserve now...
-            isOnReserve = false;
-            
-            // Startup the engine.
-            LastVehicle.EngineRunning = true;
-            LastVehicle.HazardLightsOn = false;
-
-            // Get in vehicle back.
-            Player.Character.Task.EnterVehicle(LastVehicle, VehicleSeat.Driver);
-
-            Wait(2000);
-
-            // Let the player know...
-            // Game.DisplayText("You injected " + Convert.ToInt32(CurrentVehicle.Metadata.Fuel) + " litre(s) of fuel to your vehicle.", 6000);
-            Log("VehicleRepair", "Player injected " + Convert.ToInt32(CurrentVehicle.Metadata.Fuel) + " litre(s) of fuel for vehicle: " + CurrentVehicle.Name.ToString() + " with bottle " + (fuelBottles + 1) + ".");
-
-            CurrentVehicle.Metadata.NoFuelDamage = (bool)false;
-
-            // Cost one fuel bottle...
-            fuelBottles += 1;
-
-            // Reset black & white effect.
-            if (Settings.GetValueBool("EFFECTS", "MISC", true))
-            {
-                GTA.Native.Function.Call("CLEAR_TIMECYCLE_MODIFIER");
-            }
-
-            // Hurry up, we wasted some time!
-            Wait(600);
-            Player.Character.SayAmbientSpeech("HURRY_UP");
         }
         #endregion
 
@@ -1444,10 +1464,7 @@ namespace FuelScript
                         // Controls the flashing when on reserved fuel.
                         flash = (flash == 20) ? 0 : flash + 1;
                     }
-                    catch
-                    {
-
-                    }
+                    catch{}
                 }
             }
             catch (Exception crap)
