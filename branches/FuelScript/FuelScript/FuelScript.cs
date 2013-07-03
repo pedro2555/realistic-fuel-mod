@@ -94,11 +94,11 @@ namespace FuelScript
             Log("FuelScript", "### NEW SESSION STARTED ON " + System.DateTime.Now + " ###");
 
             // Then log the rest of bla blas...
-            Log("FuelScript", "FuelScript Mod v" + version + " loaded for GTA IV under GTA IV " + Game.Version.ToString() + " successfully.");
+            Log("FuelScript", "Realistic Fuel Mod " + version + " for GTA IV loaded under GTA IV " + Game.Version.ToString() + " successfully.");
             Log("FuelScript", "Modified and further development done by Sandakelum (sandakelum2009@gmail.com)");
             Log("FuelScript", "Based on Ultimate Fuel Script v2.1 (https://code.google.com/p/ultimate-fuel-script)");
-            Log("FuelScript", "FuelScript Mod v" + version + " running under: " + getOSInfo());
-            Log("FuelScript", "FuelScript Mod v" + version + " found dsound.dll " + ((File.Exists(Game.InstallFolder + "\\dsound.dll")) ? "present" : "not present") + ", xlive.dll " + ((File.Exists(Game.InstallFolder + "\\xlive.dll")) ? "present" : "not present") + " and SlimDX.dll " + ((File.Exists(Game.InstallFolder + "\\SlimDX.dll")) ? "present." : "not present."));
+            Log("FuelScript", "Realistic Fuel Mod " + version + " running under: " + getOSInfo());
+            Log("FuelScript", "Realistic Fuel Mod " + version + " found dsound.dll " + ((File.Exists(Game.InstallFolder + "\\dsound.dll")) ? "present" : "not present") + ", xlive.dll " + ((File.Exists(Game.InstallFolder + "\\xlive.dll")) ? "present" : "not present") + " and SlimDX.dll " + ((File.Exists(Game.InstallFolder + "\\SlimDX.dll")) ? "present." : "not present."));
 
             Log("FuelScript", "Loading settings file: FuelScripts.ini...");
 
@@ -1063,27 +1063,30 @@ namespace FuelScript
                         // Get out of vehicle.
                         // If Niko is driving a Helicopter or a Boat we don't want to get him out to inject a fuel bottle, do we?
                         // That would kill Niko... lol, it could be fun though :D
-                        // Added a fix for the crash when injecting fuel bottles to a bus by letting Niko do it inside!
-                        if (CurrentVehicle.Model.isCar || CurrentVehicle.Model.isBike || CurrentVehicle.Name == "BUS")
+                        if (CurrentVehicle.Model.isCar || CurrentVehicle.Model.isBike)
                         {
-                            Player.Character.Task.LeaveVehicle(CurrentVehicle, true);
-                            
-                            // Let him know that Niko doing a magic!
-                            if (Settings.GetValueBool("BOTTLEUSINGTEXT", "TEXTS", true))
+                            // Added a fix for the crash when injecting fuel bottles to a bus by letting Niko do it inside!
+                            if (CurrentVehicle.Name != "BUS")
                             {
-                                Game.DisplayText("You're now using one of your emergency fuel bottles on this vehicle.", 10000);
+                                Player.Character.Task.LeaveVehicle(CurrentVehicle, true);
+
+                                // Let him know that Niko doing a magic!
+                                if (Settings.GetValueBool("BOTTLEUSINGTEXT", "TEXTS", true))
+                                {
+                                    Game.DisplayText("You're now using one of your emergency fuel bottles on this vehicle.", 10000);
+                                }
+
+                                // Wait until Niko got to the position.
+                                Wait(3000);
+
+                                // Turn to the vehicle side, door side!
+                                Player.Character.Task.TurnTo(LastVehicle.Position);
+                                Wait(500);
+
+                                // Do his magic!
+                                Game.LocalPlayer.Character.Task.PlayAnimation(new AnimationSet("misstaxidepot"), "workunderbonnet", 4.0f);
+                                Wait(7200);
                             }
-                            
-                            // Wait until Niko got to the position.
-                            Wait(3000);
-
-                            // Turn to the vehicle side, door side!
-                            Player.Character.Task.TurnTo(LastVehicle.Position);
-                            Wait(500);
-
-                            // Do his magic!
-                            Game.LocalPlayer.Character.Task.PlayAnimation(new AnimationSet("misstaxidepot"), "workunderbonnet", 4.0f);
-                            Wait(7200);
                         }
 
                         // Repair the vehicle.
@@ -1111,10 +1114,23 @@ namespace FuelScript
 
                         // Get in vehicle back.
                         // Only let get in if Niko got out in previous callout.
-                        if (LastVehicle.Model.isCar || LastVehicle.Model.isBike || LastVehicle.Name == "BUS")
+                        if (LastVehicle.Model.isCar || LastVehicle.Model.isBike)
                         {
-                            Player.Character.Task.EnterVehicle(LastVehicle, VehicleSeat.Driver);
-                            Wait(2000);
+                            if (CurrentVehicle.Name != "BUS")
+                            {
+                                Player.Character.Task.EnterVehicle(LastVehicle, VehicleSeat.Driver);
+                                Wait(2000);
+                            }
+                            // Show that Niko didn't get out to inject it.
+                            else
+                            {
+                                Game.DisplayText("You injected " + Convert.ToInt32(CurrentVehicle.Metadata.Fuel) + " litre(s) of fuel to this vehicle using a fuel bottle.\nYou don't need to exit to inject fuel bottle in this vehicle.", 6000);
+                            }
+                        }
+                        // Show that Niko didn't get out to inject it.
+                        else
+                        {
+                            Game.DisplayText("You injected " + Convert.ToInt32(CurrentVehicle.Metadata.Fuel) + " litre(s) of fuel to this vehicle using a fuel bottle.\nYou don't need to exit to inject fuel bottle in this vehicle.", 6000);
                         }
 
                         // Let the player know...
