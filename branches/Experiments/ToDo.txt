@@ -1,5 +1,8 @@
 POTENTIAL ERRORS NEEDS FIXING
 
+Script must consume errors and log them, to avoid crashing.
+try - catch blocks
+
 ERROR #1
 ERROR DETAILS   :   Script crashes when player tried to inject a fuel bottle to a bus.
                     Crash occurs at the end of the animation which is in doVehicleRepair()
