@@ -90,7 +90,7 @@ namespace FuelScript
             Log("FuelScript", "### NEW SESSION STARTED ON " + System.DateTime.Now + " ###");
 
             // Then log the rest of bla blas...
-            Log("FuelScript", "FuelScript Mod v" + version + " by Sandakelum loaded for GTA IV under GTA IV " + Game.Version.ToString() + " successfully.");
+            Log("FuelScript", "FuelScript Mod v" + version + " loaded for GTA IV under GTA IV " + Game.Version.ToString() + " successfully.");
             Log("FuelScript", "Modified and further development done by Sandakelum (sandakelum2009@gmail.com)");
             Log("FuelScript", "Based on Ultimate Fuel Script v2.1 (https://code.google.com/p/ultimate-fuel-script)");
             Log("FuelScript", "FuelScript Mod v" + version + " running under: " + getOSInfo());
@@ -114,7 +114,7 @@ namespace FuelScript
             // Show the script status.
             if (Settings.GetValueBool("STARTUPTEXT", "TEXTS", true))
             {
-                Game.DisplayText("Realistic Fuel Mod " + version + " for GTA IV by Sandakelum has loaded\nYou got " + (maxFuelBottleUses - fuelBottles) + " free emergency fuel bottles.", 10000);
+                Game.DisplayText("Realistic Fuel Mod " + version + " for GTA IV has loaded\nYou got " + (maxFuelBottleUses - fuelBottles) + " free emergency fuel bottles.", 10000);
             }
 
             // Log("FuelScript", "Selecting the fuel display panel mode from settings file...");
