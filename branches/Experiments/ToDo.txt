@@ -1,15 +1,25 @@
 POTENTIAL ERRORS NEEDS FIXING
 
 ERROR #1
-ERROR DETAILS	  :  Script crashes when player tried to inject a fuel bottle to a bus.
-                   Crash occurs at the end of the animation which is in doVehicleRepair()
-                   function. I suspect it's because of the longer time player takes to get
-                   off the bus than a normal vehicle may not enough to the waiting times
-                   we put there (maybe this error is present on all vehicles with
-                   "+big" flag?).
-REPRODUCE STEPS	:  Go to a bus depot or the time square and get on a bus. Drive it until
-                   the fuel is depleted (increasing draining speed of buses may save your
-                   time). Then press the bottle use key (default U) to use a fuel bottle
-                   and right where the player gets in to the bus, script crashes!
-FILES AFFECTED	 :  branches/FuelScript/FuelScript/FuelScript.cs (line 1082 - 1155)
-REPORTED BY		  :  Sandakelum
+ERROR DETAILS   :   Script crashes when player tried to inject a fuel bottle to a bus.
+                    Crash occurs at the end of the animation which is in doVehicleRepair()
+                    function. I suspect it's because of the longer time player takes to get
+                    off the bus than a normal vehicle may not enough to the waiting times
+                    we put there (maybe this error is present on all vehicles with
+                    "+big" flag?).
+REPRODUCE STEPS :   Go to a bus depot or the time square and get on a bus. Drive it until
+                    the fuel is depleted (increasing draining speed of buses may save your
+                    time). Then press the bottle use key (default U) to use a fuel bottle
+                    and right where the player gets in to the bus, script crashes!
+FILES AFFECTED  :   branches/FuelScript/FuelScript/FuelScript.cs (line 1082 - 1155)
+FUNCTION        :   doVehicleRepair()
+REPORTED BY     :   Sandakelum
+
+ERROR #2
+ERROR DETAILS   :   Black & White effect when entered to reserved fuel is not working properly
+                    (which is can be toggle by user specified settings of course).
+REPRODUCE STEPS :   Drive any vehicle until you enter to reserved fuel and screen won't turn
+                    black & white even when settings set to do so.
+FILES AFFECTED  :   braches/FuelScript/FuelScript/FuelScript.cs (line 732 - 736)
+FUNCTION        :   DrainFuel()
+REPORTED BY     :   Sandakelum
