@@ -91,7 +91,7 @@ namespace FuelScript
             this.Tick += new EventHandler(FuelScript_Tick);
 
             // Start a new log session by putting this dashed line so we can easily identify it
-            Log("FuelScript", "### NEW SESSION STARTED ON " + System.DateTime.Now + " ###");
+            Log("FuelScript", "NEW SESSION STARTED ON " + System.DateTime.Now + " - GTA IV");
 
             // Then log the rest of bla blas...
             Log("FuelScript", "Realistic Fuel Mod " + version + " for GTA IV loaded under GTA IV " + Game.Version.ToString() + " successfully.");
@@ -154,14 +154,12 @@ namespace FuelScript
             // Bind the keyup function.
             this.KeyUp += new GTA.KeyEventHandler(FuelScript_KeyUp);
             
-            // Fuel meter dashboard location, X and Y.
+            // Fuel meter dashboard location, X, Y and W (width).
             Dashboard = new PointF(Settings.GetValueFloat("X", "DASHBOARD", 0.0f), Settings.GetValueFloat("Y", "DASHBOARD", 0.0f));
+            GaugeWidth = Settings.GetValueFloat("W", "DASHBOARD", 0.11f);
             
             // Speed multipier if needed.
             SpeedMultiplier = (Settings.GetValueString("SPEED", "MISC", "KPH").ToUpper().Trim() == "KPH") ? 3.6f : 2.23693629f;
-            
-            // Width of the fuel meter in Classic mode.
-            GaugeWidth = Settings.GetValueFloat("CLASSICGAUGEWIDTH", "DASHBOARD", 0.0f);
             
             // Log key mappings for diagnostics (not really necessary, whatever).
             Log("FuelScript", "Settings: Refuel Key - " + Settings.GetValueKey("REFUELKEY", "KEYS", Keys.E) + ", Bottle Use Key - " + Settings.GetValueKey("BOTTLEUSEKEY", "KEYS", Keys.U) + ", Bottle Buy Key - " + Settings.GetValueKey("BOTTLEBUYKEY", "KEYS", Keys.B) + ".");
@@ -781,7 +779,7 @@ namespace FuelScript
                     // This is shown when the vehicle ran out of fuel.
                     if (Settings.GetValueBool("OUTOFFUELTEXT", "TEXTS", true))
                     {
-                        Game.DisplayText(((MaxFuelBottles - UsedFuelBottles) >= 1) ? ((CurrentVehicle.Speed == 0.0f) ? "Press " + Settings.GetValueKey("BOTTLEUSEKEY", "KEYS", Keys.U) + " button to inject an emergency fuel bottle. " + ((((MaxFuelBottles - UsedFuelBottles) - 1) >= 1) ? "You have " + (MaxFuelBottles - UsedFuelBottles) + " fuel bottle" + (((MaxFuelBottles - UsedFuelBottles) == 1) ? "" : "s") + " left.\n" + ((UsedFuelBottles > 0) ? "Refilling your " + UsedFuelBottles + " empty fuel bottle" + ((UsedFuelBottles == 1) ? "" : "s") + " costs $" + (UsedFuelBottles * FuelBottleCost) + " for you ($" + FuelBottleCost + " each)" : "A used fuel bottle can be refilled again for $" + FuelBottleCost + " at fueling stations") + "." : "\nLast fuel bottle, find a refueling station quickly!") : "You ran out of fuel. " + (((MaxFuelBottles - UsedFuelBottles) >= 1) ? "You have " + (MaxFuelBottles - UsedFuelBottles) + " emergency fuel bottle" + (((MaxFuelBottles - UsedFuelBottles) == 1) ? "" : "s") + " left." : "No emerygency fuel bottles left.") + "\nWait until the vehicle stops and engine is idle.") : "Out of fuel. Sorry, but the vehicle cannot be started unless you could get a fuel bottle from a nearby fueling station.\nIt's America! There's no gurantee that the vehicle will be here. Anyway, you can hold F and lock the doors.");
+                        Game.DisplayText(((MaxFuelBottles - UsedFuelBottles) >= 1) ? ((CurrentVehicle.Speed == 0.0f) ? "Press " + Settings.GetValueKey("BOTTLEUSEKEY", "KEYS", Keys.U) + " button to inject an emergency fuel bottle. " + ((((MaxFuelBottles - UsedFuelBottles) - 1) >= 1) ? "You have " + (MaxFuelBottles - UsedFuelBottles) + " fuel bottle" + (((MaxFuelBottles - UsedFuelBottles) == 1) ? "" : "s") + " left.\n" + ((UsedFuelBottles > 0) ? "Refilling your " + UsedFuelBottles + " empty fuel bottle" + ((UsedFuelBottles == 1) ? "" : "s") + " costs $" + (UsedFuelBottles * FuelBottleCost) + " for you ($" + FuelBottleCost + " each)" : "A used fuel bottle can be refilled again for $" + FuelBottleCost + " at fueling stations") + "." : "\nLast fuel bottle, find a refueling station quickly!") : "You ran out of fuel. " + (((MaxFuelBottles - UsedFuelBottles) >= 1) ? "You have " + (MaxFuelBottles - UsedFuelBottles) + " emergency fuel bottle" + (((MaxFuelBottles - UsedFuelBottles) == 1) ? "" : "s") + " left." : "No emerygency fuel bottles left.") + "\nWait until the vehicle stops and engine is idle.") : "Out of fuel. Sorry, but the vehicle cannot be started unless you\ncould get a fuel bottle from a nearby fueling station.");
                     }
 
                     // Log("DrainFuel", "Player ran out of fuel on vehicle: " + CurrentVehicle.Name.ToString() + " as " + CurrentVehicle.Metadata.Fuel + " fuel units and " + CurrentVehicle.Metadata.Reserve + " reserve units.");
@@ -948,7 +946,7 @@ namespace FuelScript
             catch (Exception crap) { Log("ERROR: FinishRefuel", crap.Message); }
         }
         /// <summary>
-        /// Fills the fuel tank at 3 untis per second in case of cars and bikes, fills at 19 units per second in case of boats and helis.
+        /// Fills the fuel tank at 5 units per second in case of cars and bikes, fills at 10 units per second in case of boats and helis.
         /// </summary>
         private void ReFuel()
         {
@@ -1063,75 +1061,89 @@ namespace FuelScript
                         // Get out of vehicle.
                         // If Niko is driving a Helicopter or a Boat we don't want to get him out to inject a fuel bottle, do we?
                         // That would kill Niko... lol, it could be fun though :D
-                        if (CurrentVehicle.Model.isCar || CurrentVehicle.Model.isBike)
+                        // Added a fix for the crash when injecting fuel bottles to a bus by letting Niko do it inside!
+                        if ((CurrentVehicle.Model.isCar || CurrentVehicle.Model.isBike) && CurrentVehicle.Name != "BUS")
                         {
-                            // Added a fix for the crash when injecting fuel bottles to a bus by letting Niko do it inside!
-                            if (CurrentVehicle.Name != "BUS")
+                            Player.Character.Task.LeaveVehicle(CurrentVehicle, true);
+
+                            // Let him know that Niko doing a magic!
+                            if (Settings.GetValueBool("BOTTLEUSINGTEXT", "TEXTS", true))
                             {
-                                Player.Character.Task.LeaveVehicle(CurrentVehicle, true);
-
-                                // Let him know that Niko doing a magic!
-                                if (Settings.GetValueBool("BOTTLEUSINGTEXT", "TEXTS", true))
-                                {
-                                    Game.DisplayText("You're now using one of your emergency fuel bottles on this vehicle.", 10000);
-                                }
-
-                                // Wait until Niko got to the position.
-                                Wait(3000);
-
-                                // Turn to the vehicle side, door side!
-                                Player.Character.Task.TurnTo(LastVehicle.Position);
-                                Wait(500);
-
-                                // Do his magic!
-                                Game.LocalPlayer.Character.Task.PlayAnimation(new AnimationSet("misstaxidepot"), "workunderbonnet", 4.0f);
-                                Wait(7200);
+                                Game.DisplayText("You're now using one of your emergency fuel bottles on this vehicle.", 10000);
                             }
-                        }
 
-                        // Repair the vehicle.
-                        // Is the damage caused by low fuel running?
-                        if (LastVehicle.Metadata.NoFuelDamage)
-                        {
-                            // If so, repair the engine, not visual damage!
-                            LastVehicle.EngineHealth = 1000.0f;
-                        }
-                        // Is the damage caused by player's act?
-                        else
-                        {
-                            // If so, repair few of the damage in engine, not visual damage!
-                            LastVehicle.EngineHealth = (1000.0f - LastVehicle.EngineHealth) / 3;
-                        }
+                            // Wait until Niko got to the position.
+                            Wait(2600);
 
-                        // Give a little fuel capacity...
-                        LastVehicle.Metadata.Fuel = LastVehicle.Metadata.Reserve + (LastVehicle.Metadata.MaxTank / 10);
-                        // Not on reserve now...
-                        OnReserve = false;
+                            // Turn to the vehicle side, door side!
+                            Player.Character.Task.TurnTo(LastVehicle.Position);
+                            Wait(500);
 
-                        // Startup the engine.
-                        LastVehicle.EngineRunning = true;
-                        LastVehicle.HazardLightsOn = false;
+                            // Do his magic!
+                            Game.LocalPlayer.Character.Task.PlayAnimation(new AnimationSet("misstaxidepot"), "workunderbonnet", 4.0f);
+                            Wait(6800);
 
-                        // Get in vehicle back.
-                        // Only let get in if Niko got out in previous callout.
-                        if (LastVehicle.Model.isCar || LastVehicle.Model.isBike)
-                        {
-                            if (CurrentVehicle.Name != "BUS")
+                            // Repair the vehicle.
+                            // Is the damage caused by low fuel running?
+                            if (LastVehicle.Metadata.NoFuelDamage)
                             {
-                                Player.Character.Task.EnterVehicle(LastVehicle, VehicleSeat.Driver);
-                                Wait(2000);
+                                // If so, repair the engine, not visual damage!
+                                LastVehicle.EngineHealth = 1000.0f;
                             }
-                            // Show that Niko didn't get out to inject it.
+                            // Is the damage caused by player's act?
                             else
                             {
-                                Game.DisplayText("You injected " + Convert.ToInt32(CurrentVehicle.Metadata.Fuel) + " litre(s) of fuel to this vehicle using a fuel bottle.\nYou don't need to exit to inject fuel bottle in this vehicle.", 6000);
+                                // If so, repair few of the damage in engine, not visual damage!
+                                LastVehicle.EngineHealth = (1000.0f - LastVehicle.EngineHealth) / 3;
                             }
+
+                            // Give a little fuel capacity...
+                            LastVehicle.Metadata.Fuel = LastVehicle.Metadata.Reserve + (LastVehicle.Metadata.MaxTank / 10);
+                            // Not on reserve now...
+                            OnReserve = false;
+
+                            // Startup the engine.
+                            LastVehicle.EngineRunning = true;
+                            LastVehicle.HazardLightsOn = false;
+                            Player.Character.Task.EnterVehicle(LastVehicle, VehicleSeat.Driver);
                         }
-                        // Show that Niko didn't get out to inject it.
+                        // If it a helicopter, boat or a bus...
+                        // Inject the fuel bottle without getting off the vehicle
+                        // For safety issues... Hahhha...
                         else
                         {
-                            Game.DisplayText("You injected " + Convert.ToInt32(CurrentVehicle.Metadata.Fuel) + " litre(s) of fuel to this vehicle using a fuel bottle.\nYou don't need to exit to inject fuel bottle in this vehicle.", 6000);
+                            // Let him know that Niko doing a magic!
+                            if (Settings.GetValueBool("BOTTLEUSINGTEXT", "TEXTS", true))
+                            {
+                                Game.DisplayText("You used one of your fuel bottles on this vehicle.", 5000);
+                            }
+
+                            // Repair the vehicle.
+                            // Is the damage caused by low fuel running?
+                            if (CurrentVehicle.Metadata.NoFuelDamage)
+                            {
+                                // If so, repair the engine, not visual damage!
+                                CurrentVehicle.EngineHealth = 1000.0f;
+                            }
+                            // Is the damage caused by player's act?
+                            else
+                            {
+                                // If so, repair few of the damage in engine, not visual damage!
+                                CurrentVehicle.EngineHealth = (1000.0f - CurrentVehicle.EngineHealth) / 3;
+                            }
+
+                            // Give a little fuel capacity...
+                            CurrentVehicle.Metadata.Fuel = CurrentVehicle.Metadata.Reserve + (CurrentVehicle.Metadata.MaxTank / 10);
+                            // Not on reserve now...
+                            OnReserve = false;
+
+                            // Startup the engine.
+                            CurrentVehicle.EngineRunning = true;
+                            CurrentVehicle.HazardLightsOn = false;
                         }
+
+                        // Relax a while...
+                        Wait(2000);
 
                         // Let the player know...
                         // Game.DisplayText("You injected " + Convert.ToInt32(CurrentVehicle.Metadata.Fuel) + " litre(s) of fuel to your vehicle.", 6000);
@@ -1452,16 +1464,14 @@ namespace FuelScript
                         // Calculate fuel availablity...
                         float FuelAvailability = (Convert.ToInt32(CurrentVehicle.Metadata.Fuel) * 100) / Convert.ToInt32(CurrentVehicle.Metadata.MaxTank);
 
-                        // NOTE: This is to know how much fuel is remaining, in litres.
+                        // NOTE: This is to know how much fuel is remaining, in litres. As we have fuel bottles indicator in place, this has been commented out.
                         // e.Graphics.DrawText(Convert.ToInt32((float)CurrentVehicle.Metadata.Fuel).ToString() + " l", Dashboard.X - 0.035f, Dashboard.Y - 0.012f, (CurrentVehicle.Metadata.Fuel <= CurrentVehicle.Metadata.Reserve) ? ((Flashing < 5) ? GTA.ColorIndex.SmokeSilverPoly : (GTA.ColorIndex)35) : GTA.ColorIndex.SmokeSilverPoly, FuelMeterFont);
-                        // NOTE: This is with the B in word "Bottle", but I thought it's little long, isnt' it?
-                        // e.Graphics.DrawText(Convert.ToInt32((float)(maxFuelBottleUses - fuelBottles)).ToString() + "/" + Convert.ToInt32((float)maxFuelBottleUses).ToString() + "B", Dashboard.X - 0.039f, Dashboard.Y - 0.011f, ((maxFuelBottleUses - fuelBottles) <= 1) ? ((Flashing < 5) ? GTA.ColorIndex.SmokeSilverPoly : (GTA.ColorIndex)35) : GTA.ColorIndex.SmokeSilverPoly, FuelMeterFont);
 
                         // Draw the fuel bottles status (such as "2/5").
                         e.Graphics.DrawText(Convert.ToInt32((int)(MaxFuelBottles - UsedFuelBottles)).ToString() + "/" + Convert.ToInt32((int)MaxFuelBottles).ToString(), Dashboard.X - 0.030f, Dashboard.Y - 0.011f, ((MaxFuelBottles - UsedFuelBottles) <= 1) ? ((Flashing < 5) ? GTA.ColorIndex.SmokeSilverPoly : (GTA.ColorIndex)35) : GTA.ColorIndex.SmokeSilverPoly, FuelMeterFont);
 
                         // Draw fuel level status (such as "57%").
-                        e.Graphics.DrawText(Convert.ToInt32((float)FuelAvailability).ToString("00") + "%", Dashboard.X + 0.115f, Dashboard.Y - 0.012f, (CurrentVehicle.Metadata.Fuel <= CurrentVehicle.Metadata.Reserve) ? ((Flashing < 5) ? GTA.ColorIndex.SmokeSilverPoly : (GTA.ColorIndex)35) : GTA.ColorIndex.SmokeSilverPoly, FuelMeterFont);
+                        e.Graphics.DrawText(Convert.ToInt32((float)FuelAvailability).ToString("00") + "%", (Dashboard.X + GaugeWidth) + 0.006f, Dashboard.Y - 0.012f, (CurrentVehicle.Metadata.Fuel <= CurrentVehicle.Metadata.Reserve) ? ((Flashing < 5) ? GTA.ColorIndex.SmokeSilverPoly : (GTA.ColorIndex)35) : GTA.ColorIndex.SmokeSilverPoly, FuelMeterFont);
 
                         // Draw fuel level meter's black background.
                         e.Graphics.DrawRectangle(new RectangleF(Dashboard.X - 0.0035f, Dashboard.Y - 0.004f, GaugeWidth, 0.0125f), GTA.ColorIndex.Black);
