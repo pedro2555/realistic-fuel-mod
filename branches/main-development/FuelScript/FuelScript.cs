@@ -778,6 +778,16 @@ namespace FuelScript
                     }
 
                     // Log("DrainFuel", "Player ran out of fuel on vehicle: " + CurrentVehicle.Name.ToString() + " as " + CurrentVehicle.Metadata.Fuel + " fuel units and " + CurrentVehicle.Metadata.Reserve + " reserve units.");
+
+                    // Mass angry when Niko lost a vehicle...
+                    // NOTE: Something weired happening, exact thing runs. But last only around a second!
+                    /*
+                    if (CurrentVehicle.Metadata.Fuel == 0 && UsedFuelBottles == MaxFuelBottles)
+                    {
+                        Player.Character.SayAmbientSpeech("HIGH_FALL");
+                        GTA.Native.Function.Call("SET_CAM_SHAKE", Game.DefaultCamera, true, 10);
+                    }
+                    */
                 }
 
                 // Is the player near a fueling station, then give him some help!
@@ -1256,51 +1266,37 @@ namespace FuelScript
                 if (Player.Character.isGettingIntoAVehicle)
                 {
                     // Is he inside of a vehicle?
-                    if (Player.Character.isInVehicle())
+                    if (Player.Character.isInVehicle() && Player == CurrentVehicle.GetPedOnSeat(VehicleSeat.Driver))
                     {
-                        // Are we sure Niko is driving?
-                        if (Player == CurrentVehicle.GetPedOnSeat(VehicleSeat.Driver))
+                        // Log it so we can know what happened.
+                        Log("Tick", "Player entered a vehicle: " + CurrentVehicle.Name.ToString() + ", Have " + Convert.ToInt32(CurrentVehicle.Metadata.Fuel) + " litre(s), Capacity - " + Convert.ToInt32(CurrentVehicle.Metadata.MaxTank) + " litre(s), Reserve - " + Convert.ToInt32(CurrentVehicle.Metadata.Reserve) + " litre(s), Drain - " + Convert.ToInt32(CurrentVehicle.Metadata.Drain) + " units.");
+
+                        // Is current vehicle is required for an ingame mission?
+                        if (CurrentVehicle.isRequiredForMission && !Settings.GetValueBool("MVDRAIN", "MISC", false))
                         {
-                            // Log it so we can know what happened.
-                            Log("Tick", "Player entered a vehicle: " + CurrentVehicle.Name.ToString() + ", Have " + Convert.ToInt32(CurrentVehicle.Metadata.Fuel) + " litre(s), Capacity - " + Convert.ToInt32(CurrentVehicle.Metadata.MaxTank) + " litre(s), Reserve - " + Convert.ToInt32(CurrentVehicle.Metadata.Reserve) + " litre(s), Drain - " + Convert.ToInt32(CurrentVehicle.Metadata.Drain) + " units.");
-
-                            // Is current vehicle is required for an ingame mission?
-                            if (CurrentVehicle.isRequiredForMission && !Settings.GetValueBool("MVDRAIN", "MISC", false))
+                            // If so, fuel should not be drained, otherwise player will face so much trouble...
+                            // Specially, if the mission is based on time, he can't go refuel it, can he?
+                            if (Settings.GetValueBool("MISSIONREQUIREDTEXT", "TEXTS", true))
                             {
-                                // If so, fuel should not be drained, otherwise player will face so much trouble...
-                                // Specially, if the mission is based on time, he can't go refuel it, can he?
-                                if (Settings.GetValueBool("MISSIONREQUIREDTEXT", "TEXTS", true))
-                                {
-                                    Game.DisplayText("Your vehicle is required for a mission, fuel is not draining!", 8000);
-                                }
-
-                                Log("DrainFuel", "Fuel is not draining on vehicle: " + CurrentVehicle.Name.ToString() + " as it's required for a mission.");
+                                Game.DisplayText("Your vehicle is required for a mission, fuel is not draining!", 8000);
                             }
-                            // Is it a normal vehicle? Using to free roam?
-                            else
+
+                            Log("DrainFuel", "Fuel is not draining on vehicle: " + CurrentVehicle.Name.ToString() + " as it's required for a mission.");
+                        }
+                        // Is it a normal vehicle? Using to free roam?
+                        else
+                        {
+                            if (Settings.GetValueBool("VEHICLESTATUSTEXT", "TEXTS", true))
                             {
-                                if (Settings.GetValueBool("VEHICLESTATUSTEXT", "TEXTS", true))
-                                {
-                                    // Calculate fuel percentage.
-                                    float FuelAvailability = (Convert.ToInt32(CurrentVehicle.Metadata.Fuel) * 100) / Convert.ToInt32(CurrentVehicle.Metadata.MaxTank);
+                                // Calculate fuel percentage.
+                                float FuelAvailability = (Convert.ToInt32(CurrentVehicle.Metadata.Fuel) * 100) / Convert.ToInt32(CurrentVehicle.Metadata.MaxTank);
 
-                                    // When player gets into a vehicle, so it's status.
-                                    Game.DisplayText("This vehicle currently holds " + Convert.ToInt32((float)FuelAvailability).ToString() + "% fuel left in it's " + Convert.ToInt32(CurrentVehicle.Metadata.MaxTank) + " litre(s) tank.\n" + (((MaxFuelBottles - UsedFuelBottles) >= 1) ? "You have " + (MaxFuelBottles - UsedFuelBottles) + " emergency fuel bottle" + (((MaxFuelBottles - UsedFuelBottles) == 1) ? "" : "s") + " left." : "You have no emergency fuel bottles left."), 10000);
-                                }
-
-                                // Mark it as not damaged by low fuel running.
-                                CurrentVehicle.Metadata.NoFuelDamage = (bool)false;
-
-                                // Mass angry when Niko lost a vehicle...
-                                // NOTE: Something weired happening, exact thing runs. But last only around a second!
-                                /*
-                                if (CurrentVehicle.Metadata.Fuel == 0 && fuelBottles == maxFuelBottleUses)
-                                {
-                                    Player.Character.SayAmbientSpeech("HIGH_FALL");
-                                    GTA.Native.Function.Call("SET_CAM_SHAKE", Game.DefaultCamera, true, 10);
-                                }
-                                */
+                                // When player gets into a vehicle, so it's status.
+                                Game.DisplayText("This vehicle currently holds " + Convert.ToInt32((float)FuelAvailability).ToString() + "% fuel left in it's " + Convert.ToInt32(CurrentVehicle.Metadata.MaxTank) + " litre(s) tank.\n" + (((MaxFuelBottles - UsedFuelBottles) >= 1) ? "You have " + (MaxFuelBottles - UsedFuelBottles) + " emergency fuel bottle" + (((MaxFuelBottles - UsedFuelBottles) == 1) ? "" : "s") + " left." : "You have no emergency fuel bottles left."), 10000);
                             }
+
+                            // Mark it as not damaged by low fuel running.
+                            CurrentVehicle.Metadata.NoFuelDamage = (bool)false;
                         }
                     }
                 }
