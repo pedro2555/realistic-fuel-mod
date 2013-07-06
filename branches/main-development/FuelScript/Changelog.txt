@@ -1,3 +1,24 @@
+VERSION 2.2.0.3 (July 07, 2013)
+
+CHANGE:	Now Niko is not getting off from Helicopters and Boats to inject fuel bottles.
+		It also means there's no animation for those type of vehicles, just fuel
+		bottle deduction and increment of fuel level.
+CHANGE: Changed configuration setting: CLASSICGAUGEWIDTH to W, making the dashboard
+		position parameters easy as X, Y and W (alias for width).
+CHANGE:	Changed configuration setting: MISSIONVEHICLESDRAIN to MVDRAIN, making it short
+		while the description is in there to user reference.
+FIX:	Static fuel percentage position if user decreased fuel meter width, now it's
+		dynamic and will automatically adjust to where fuel meter ends.
+FIX:	Issue with Bus, when using a fuel bottle script crashes. Temporary fixed by
+		not letting Niko get off the bus.
+FIX:	Script waiting times are now automatically adjust according to player's position
+		and state, and script will properly wait for next events without a crash.
+FIX:	Fixed few errors that caused to crash the script when entering a new vehicle.
+RMVD:	Time Cycle change (black & white effect) when entered to reserved fuel.
+NOTE:	Started beta and nightly builds.
+NOTE: 	Fully commented, properly structured source code is now available at Google Code
+		Project Hosting (https://code.google.com/p/realistic-fuel-mod).
+
 VERSION 2.2.0.2 (July 02, 2013)
 
 ADD:	Now you can toggle whether mission vehicles will drain fuel or not by
