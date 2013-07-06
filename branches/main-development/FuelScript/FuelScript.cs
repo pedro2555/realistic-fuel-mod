@@ -94,7 +94,7 @@ namespace FuelScript
             this.Tick += new EventHandler(FuelScript_Tick);
 
             // Start a new log session by putting this dashed line so we can easily identify it
-            Log("FuelScript", "NEW SESSION STARTED ON " + System.DateTime.Now + " - GTA IV");
+            Log("FuelScript", "NEW GAME SESSION STARTED ON " + System.DateTime.Now + " - GTA IV");
 
             // Then log the rest of bla blas...
             Log("FuelScript", "Realistic Fuel Mod " + version + " for GTA IV loaded under GTA IV " + Game.Version.ToString() + " successfully.");
