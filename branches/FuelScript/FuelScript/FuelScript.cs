@@ -5,14 +5,14 @@ All rights reserved.
 Redistribution and use in source and binary forms, with or without 
 modification, are permitted provided that the following conditions are met:
 
-    - Redistributions of source code must retain the above copyright 
-      notice, this list of conditions and the following disclaimer.
-    - Redistributions in binary form must reproduce the above copyright 
-      notice, this list of conditions and the following disclaimer in
-      the documentation and/or other materials provided with the distribution.
-    - Neither the name of the author nor the names of its contributors 
-      may be used to endorse or promote products derived from this software
-      without specific prior written permission.
+	- Redistributions of source code must retain the above copyright 
+	  notice, this list of conditions and the following disclaimer.
+	- Redistributions in binary form must reproduce the above copyright 
+	  notice, this list of conditions and the following disclaimer in
+	  the documentation and/or other materials provided with the distribution.
+	- Neither the name of the author nor the names of its contributors 
+	  may be used to endorse or promote products derived from this software
+	  without specific prior written permission.
 
 This is free and unencumbered software released into the public domain.
 
@@ -36,6 +36,9 @@ IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
+
+Further developments done by Sandakelum <sandakelum2009@gmail.com>
+with the permission of original author, Pedro Rodrigues.
 */
 
 // References
@@ -69,7 +72,7 @@ namespace FuelScript
 
             // Script command functions...
             GUID = new Guid("3583e09d-6c44-4820-85e9-93926307d4f8");
-            
+
             // A different GUID specified by player in config file?
             string extGuid = Settings.GetValueString("GUID", "MISC", "").Trim();
             if (extGuid != "")
@@ -105,13 +108,13 @@ namespace FuelScript
             // Load the settings file.
             SettingsFile.Open("FuelScript.ini");
             Settings.Load();
-            
+
             // If it made this long, the settings file must be loaded without an error.
             Log("FuelScript", "Settings file: FuelScripts.ini is loaded.");
 
             // Set as not refueling when the script is starting.
             Refueling = false;
-            
+
             // Log as reading the settings file.
             Log("FuelScript", "Reading settings file: FuelScripts.ini...");
 
@@ -132,38 +135,38 @@ namespace FuelScript
                     // Bind Q to reload settings file.
                     this.BindKey(Keys.Q, Settings.Load);
                     break;
-                    
+
                 // Digital mode display panel (with digits).
                 case "DIGITAL":
                     this.PerFrameDrawing += new GraphicsEventHandler(FuelScript_PerFrameDrawing_digitalMode);
                     break;
-                    
+
                 // Classical mode display panel (with meters and several digits).
                 // Recommended mode for the public releases.
                 case "CLASSIC":
                     this.PerFrameDrawing += new GraphicsEventHandler(FuelScript_PerFrameDrawing_classicMode);
                     break;
             }
-            
+
             // Log which display panel mode was chosen by the player.
             Log("FuelScript", "Fuel display panel has been selected as: " + Settings.GetValueString("MODE", "DASHBOARD", "CLASSIC").ToUpper().Trim() + " display mode.");
-            
+
             // Bind the keydown function.
             this.KeyDown += new GTA.KeyEventHandler(FuelScript_KeyDown);
-            
+
             // Bind the keyup function.
             this.KeyUp += new GTA.KeyEventHandler(FuelScript_KeyUp);
-            
+
             // Fuel meter dashboard location, X, Y and W (width).
             Dashboard = new PointF(Settings.GetValueFloat("X", "DASHBOARD", 0.0f), Settings.GetValueFloat("Y", "DASHBOARD", 0.0f));
             GaugeWidth = Settings.GetValueFloat("W", "DASHBOARD", 0.11f);
-            
+
             // Speed multipier if needed.
             SpeedMultiplier = (Settings.GetValueString("SPEED", "MISC", "KPH").ToUpper().Trim() == "KPH") ? 3.6f : 2.23693629f;
-            
+
             // Log key mappings for diagnostics (not really necessary, whatever).
             Log("FuelScript", "Settings: Refuel Key - " + Settings.GetValueKey("REFUELKEY", "KEYS", Keys.E) + ", Bottle Use Key - " + Settings.GetValueKey("BOTTLEUSEKEY", "KEYS", Keys.U) + ", Bottle Buy Key - " + Settings.GetValueKey("BOTTLEBUYKEY", "KEYS", Keys.B) + ".");
-            
+
             // Select the input method.
             // Is he chosen to use a GamePad? If so SlimDX.dll exists?
             if (Settings.GetValueBool("GAMEPAD", "MISC", false) && File.Exists(Game.InstallFolder + "\\SlimDX.dll"))
@@ -179,27 +182,27 @@ namespace FuelScript
                 GamePad = null;
                 Log("FuelScript", "Selected active controller type as: KEYBOARD.");
             }
-            
+
             // No... no... no it's not in reserve.
             this.OnReserve = false;
-            
+
             // Classic mode meter digits styles...
             // FuelMeterFont.Color = ColorIndex.SecuricorLightGray;
             FuelMeterFont.Effect = FontEffect.Edge;
             FuelMeterFont.EffectSize = 1;
             FuelMeterFont.EffectColor = ColorIndex.Black;
 
+            // Set the beta watermark PNG file.
+            if (Settings.GetValueBool("BETA", "RELEASE", false))
+            {
+                BetaMark = Resources.GetTexture("beta_mark.png");
+            }
+
             /// <summary>
             /// Loads all the stations.
-            /// There are 3 types of stations: STATION, HELISTATION, BOATSTATION.
-            ///     
-            /// All types are self explanatory. Every station of a specified type as an unique identifier,
-            /// preceded by the station type keyword.
-            ///
+            /// There are 3 types of stations: STATION, HELISTATION, BOATSTATION. 
             /// Each type can have up to 254 stations.
-            ///
             /// The first identifier is 1, the last is 255.
-            ///
             /// The identifiers must be consecutive (1, 2, 3, 4. NOT 1, 3, 5)
             /// </summary>
             #region Load Dueling Stations
@@ -207,13 +210,13 @@ namespace FuelScript
             {
                 // Log as placing blips...
                 Log("FuelScript", "Placing fueling station blips on the map...");
-                
+
                 // First time basic values for stations counters.
                 int stationsCount = 0;
                 int carStations = 0;
                 int heliStations = 0;
                 int boatStations = 0;
-                
+
                 // Fuel stations for cars and bikes are enabled?
                 if (Settings.GetValueBool("CARS", "MISC", true))
                 {
@@ -244,15 +247,15 @@ namespace FuelScript
 
                             // Log("FuelScript", "Blip placed for: Cars, Station: " + Settings.GetValueString("NAME", "STATION" + i, "Unknown") + " Fueling Station " + i + ".");
                         }
-                        
+
                         // Stations increment.
                         stationsCount = stationsCount + 1;
-                        
+
                         // Car stations increment.
                         carStations = carStations + 1;
                     }
                 }
-                
+
                 // Fueling stations for Helicopters are enabled?
                 if (Settings.GetValueBool("HELIS", "MISC", true))
                 {
@@ -283,15 +286,15 @@ namespace FuelScript
 
                             // Log("FuelScript", "Blip placed for: Helicopters, Station: " + Settings.GetValueString("NAME", "STATION" + i, "Unknown") + " Fueling Station " + i + ".");
                         }
-                        
+
                         // Stations increment.
                         stationsCount = stationsCount + 1;
-                        
+
                         // Helicopter stations increment.
                         heliStations = heliStations + 1;
                     }
                 }
-                
+
                 // Fueling stations for boats are enabled?
                 if (Settings.GetValueBool("BOATS", "MISC", true))
                 {
@@ -322,18 +325,18 @@ namespace FuelScript
 
                             // Log("FuelScript", "Blip placed for: Boats, Station: " + Settings.GetValueString("NAME", "STATION" + i, "Unknown") + " Fueling Station " + i + ".");
                         }
-                        
+
                         // Stations increment.
                         stationsCount = stationsCount + 1;
-                        
+
                         // Boat stations increment.
                         boatStations = boatStations + 1;
                     }
                 }
-                
+
                 // Log how much fuel stations has been found...
                 Log("FuelScript", "Finished placing blips: " + stationsCount + " blips placed. " + carStations + " car, " + heliStations + " helicopter and " + boatStations + " boat stations.");
-                
+
                 // The outro? Perhaps?
                 // Game.DisplayText("Based on the source of Ultimate Fuel Script v2.1", 3000);
             }
@@ -411,6 +414,14 @@ namespace FuelScript
         /// </summary>
         private float FuelBottleCost = 129.99f;
         /// <summary>
+        /// Emergency fuel service cost
+        /// </summary>
+        private float ServiceCost = 599.99f;
+        /// <summary>
+        /// Beta Watermark Texture (embedded)
+        /// </summary>
+        GTA.Texture BetaMark;
+        /// <summary>
         /// Alias for Player.Character.CurrentVehicle
         /// </summary>
         private Vehicle CurrentVehicle
@@ -443,7 +454,7 @@ namespace FuelScript
             {
                 float FuelPercentage = (Convert.ToInt32(CurrentVehicle.Metadata.Fuel) * 100) / Convert.ToInt32(CurrentVehicle.Metadata.MaxTank);
                 if (ExtScriptGUID != Guid.Empty && Player.Character.isInVehicle())
-                    
+
                     SendScriptCommand(ExtScriptGUID, "CurrentFuelPercentage", Convert.ToInt32((float)FuelPercentage).ToString("00"));
             }
             catch (Exception crap) { Log("ERROR: SendCurrentFuelPercentage", crap.Message); }
@@ -739,12 +750,6 @@ namespace FuelScript
 
                         // Log the situation.
                         Log("DrainFuel", "Player entered to reserved fuel on vehicle: " + CurrentVehicle.Name.ToString() + " with " + CurrentVehicle.Metadata.Fuel + " fuel units and " + (MaxFuelBottles - UsedFuelBottles) + " emergency fuel bottle" + (((MaxFuelBottles - UsedFuelBottles) == 1) ? "" : "s") + " left.");
-
-                        // Turn screen black & white.
-                        if (Settings.GetValueBool("EFFECTS", "MISC", true))
-                        {
-                            GTA.Native.Function.Call("SET_TIMECYCLE_MODIFIER", "busted");
-                        }
                     }
                     // If vehicle has fuel than reserved amount.
                     else if (CurrentVehicle.Metadata.Fuel > CurrentVehicle.Metadata.Reserve)
@@ -769,17 +774,11 @@ namespace FuelScript
                     CurrentVehicle.EngineHealth = (CurrentVehicle.EngineHealth > 100.0f) ? 100.0f : CurrentVehicle.EngineHealth;
                     CurrentVehicle.Metadata.NoFuelDamage = (bool)true;
 
-                    // Turn screen black & white.
-                    // if (Settings.GetValueBool("EFFECTS", "MISC", true))
-                    // {
-                    //    GTA.Native.Function.Call("SET_TIMECYCLE_MODIFIER", "busted");
-                    // }
-                    
                     // I don't know how to explain this line, hahhha... Let's say it's a big dynamic text?
                     // This is shown when the vehicle ran out of fuel.
                     if (Settings.GetValueBool("OUTOFFUELTEXT", "TEXTS", true))
                     {
-                        Game.DisplayText(((MaxFuelBottles - UsedFuelBottles) >= 1) ? ((CurrentVehicle.Speed == 0.0f) ? "Press " + Settings.GetValueKey("BOTTLEUSEKEY", "KEYS", Keys.U) + " button to inject an emergency fuel bottle. " + ((((MaxFuelBottles - UsedFuelBottles) - 1) >= 1) ? "You have " + (MaxFuelBottles - UsedFuelBottles) + " fuel bottle" + (((MaxFuelBottles - UsedFuelBottles) == 1) ? "" : "s") + " left.\n" + ((UsedFuelBottles > 0) ? "Refilling your " + UsedFuelBottles + " empty fuel bottle" + ((UsedFuelBottles == 1) ? "" : "s") + " costs $" + (UsedFuelBottles * FuelBottleCost) + " for you ($" + FuelBottleCost + " each)" : "A used fuel bottle can be refilled again for $" + FuelBottleCost + " at fueling stations") + "." : "\nLast fuel bottle, find a refueling station quickly!") : "You ran out of fuel. " + (((MaxFuelBottles - UsedFuelBottles) >= 1) ? "You have " + (MaxFuelBottles - UsedFuelBottles) + " emergency fuel bottle" + (((MaxFuelBottles - UsedFuelBottles) == 1) ? "" : "s") + " left." : "No emerygency fuel bottles left.") + "\nWait until the vehicle stops and engine is idle.") : "Out of fuel. Sorry, but the vehicle cannot be started unless you\ncould get a fuel bottle from a nearby fueling station.");
+                        Game.DisplayText(((MaxFuelBottles - UsedFuelBottles) >= 1) ? ((CurrentVehicle.Speed == 0.0f) ? "Press " + Settings.GetValueKey("BOTTLEUSEKEY", "KEYS", Keys.U) + " button to inject an emergency fuel bottle. " + ((((MaxFuelBottles - UsedFuelBottles) - 1) >= 1) ? "You have " + (MaxFuelBottles - UsedFuelBottles) + " fuel bottle" + (((MaxFuelBottles - UsedFuelBottles) == 1) ? "" : "s") + " left.\n" + ((UsedFuelBottles > 0) ? "Refilling your " + UsedFuelBottles + " empty fuel bottle" + ((UsedFuelBottles == 1) ? "" : "s") + " costs $" + (UsedFuelBottles * FuelBottleCost) + " for you ($" + FuelBottleCost + " each)" : "A used fuel bottle can be refilled again for $" + FuelBottleCost + " at fueling stations") + "." : "\nLast fuel bottle, find a refueling station quickly!") : "You ran out of fuel. " + (((MaxFuelBottles - UsedFuelBottles) >= 1) ? "You have " + (MaxFuelBottles - UsedFuelBottles) + " emergency fuel bottle" + (((MaxFuelBottles - UsedFuelBottles) == 1) ? "" : "s") + " left." : "No emerygency fuel bottles left.") + "\nWait until the vehicle stops and engine is idle.") : "You ran out of fuel. Sorry, but this vehicle cannot be started.\nCall GET-555-FUEL to call emergency service which cost you $" + ServiceCost + ".");
                     }
 
                     // Log("DrainFuel", "Player ran out of fuel on vehicle: " + CurrentVehicle.Name.ToString() + " as " + CurrentVehicle.Metadata.Fuel + " fuel units and " + CurrentVehicle.Metadata.Reserve + " reserve units.");
@@ -790,7 +789,7 @@ namespace FuelScript
                 {
                     // Show currently owned cash so the player can decide whether to purchase fuel or not, or unit by unit.
                     GTA.Native.Function.Call("DISPLAY_CASH", true);
-                    
+
                     // Another big dynamic text which shows when player inside of a fueling station radius.
                     if (Settings.GetValueBool("FUELINGSTATIONTEXT", "TEXTS", true))
                     {
@@ -897,22 +896,22 @@ namespace FuelScript
                     {
                         Player.Money -= Convert.ToInt32((RefuelAmount * Settings.GetValueFloat("PRICE", StationName + isAtFuelStation(), 6.99f)));
                     }
-                    
+
                     // If player should get a wanted level by refueling vehicle with a goverment property.
                     Player.WantedLevel = (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0 && Player.WantedLevel < Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0)) ? Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) : Player.WantedLevel;
-                    
+
                     // Set as not refeuling... again...
                     Refueling = false;
-                    
+
                     // Startup engine and don't hotwire.
                     CurrentVehicle.EngineRunning = true;
                     CurrentVehicle.NeedsToBeHotwired = false;
-                    
+
                     // CurrentVehicle.HazardLightsOn = false;
-                    
+
                     // Turn on lights if required.
                     GTA.Native.Function.Call("SET_VEH_LIGHTS", CurrentVehicle, 2);
-                    
+
                     // Display the balance.
                     GTA.Native.Function.Call("DISPLAY_CASH", true);
 
@@ -924,17 +923,11 @@ namespace FuelScript
 
                     // Game.DisplayText("You've refueled vehicle with " + Convert.ToInt32(RefuelAmount) + " fuel units for $" + Convert.ToInt32((RefuelAmount * Settings.GetValueFloat("PRICE", station + isAtFuelStation(), 6.99f))) + " at " + Settings.GetValueString("NAME", station + isAtFuelStation(), "Unknown") + " Fueling Station " + isAtFuelStation() + ".", 10000);
                     Log("FinishRefuel", "Player refueled vehicle: " + CurrentVehicle.Name.ToString() + " with " + RefuelAmount + " fuel units for $" + Convert.ToInt32((RefuelAmount * Settings.GetValueFloat("PRICE", StationName + isAtFuelStation(), 6.99f))) + " at " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " Fueling Station " + isAtFuelStation() + ".");
-                    
+
                     // Let the player know if the wanted level has been increased.
                     if (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0 && Player.WantedLevel < Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0))
                     {
                         Log("FinishRefuel", "Wanted level for vehicle: " + CurrentVehicle.Name.ToString() + " by " + Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) + " stars by using " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " Fueling Station " + isAtFuelStation() + ".");
-                    }
-
-                    // Reset black & white effect.
-                    if (Settings.GetValueBool("EFFECTS", "MISC", true))
-                    {
-                        GTA.Native.Function.Call("CLEAR_TIMECYCLE_MODIFIER");
                     }
 
                     // We currently show cash, and this also not showing for much time as the catalogue takes place.
@@ -954,7 +947,7 @@ namespace FuelScript
             {
                 // Fill the tank of cars and bikes 5 unit per second, and for helicopters and boats fill tank 10 units per second.
                 float unitsPerSecond = (CurrentVehicle.Model.isCar || CurrentVehicle.Model.isBike) ? 5 : 10;
-                
+
                 // Don't overrun maximum fuel tank capacity.
                 if (CurrentVehicle.Metadata.Fuel >= CurrentVehicle.Metadata.MaxTank)
                 {
@@ -962,25 +955,25 @@ namespace FuelScript
                     CurrentVehicle.Metadata.Fuel = CurrentVehicle.Metadata.MaxTank;
                     FinishRefuel();
                 }
-                
+
                 // If player tank is not full, he can refuel it.
                 else
                 {
                     // Calculate amount how much player costs for the fuel.
                     float amount = (CurrentVehicle.Metadata.Fuel + unitsPerSecond > CurrentVehicle.Metadata.MaxTank) ? CurrentVehicle.Metadata.MaxTank - CurrentVehicle.Metadata.Fuel : unitsPerSecond;
-                    
+
                     // If player doesn't have enough money to buy it.
                     if (Player.Money < (amount * Settings.GetValueFloat("PRICE", "STATION" + isAtFuelStation(), 6.99f)) + (RefuelAmount * Settings.GetValueFloat("PRICE", (CurrentVehicle.Model.isBoat) ? "BOATSTATION" : (CurrentVehicle.Model.isHelicopter) ? "HELISTATION" : "STATION" + isAtFuelStation(), 6.99f)))
                     {
                         // Player does not have any money
                         FinishRefuel();
-                        
+
                         // Inform the player about what happened.
                         if (Settings.GetValueBool("OUTOFFUNDSFUELTEXT", "TEXTS", true))
                         {
                             Game.DisplayText("Sorry, but you don't have enough money to refuel your vehicle.\nFuel unit costs $" + Settings.GetValueFloat("PRICE", "STATION" + isAtFuelStation(), 6.99f) + " here", 5000);
                         }
-                        
+
                         // Log it.
                         Log("Refuel", "Player couldn't refuel vehicle: " + CurrentVehicle.Name.ToString() + " due to insufficient money at " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " Fueling Station " + isAtFuelStation() + ".");
                     }
@@ -1033,7 +1026,7 @@ namespace FuelScript
                     {
                         Game.DisplayText("You're vehicle is now being refueled by the fueling station.\nHold the button until it reaches to the amount you would like to purchase.", 7500);
                     }
-                    
+
                     // Log as player using a fueling station.
                     Log("KeyDown", "Player is now using: " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " Fueling Station " + isAtFuelStation() + ", which offers fuel for $" + Settings.GetValueFloat("PRICE", "STATION" + isAtFuelStation(), 6.99f) + " per unit.");
                 }
@@ -1073,7 +1066,10 @@ namespace FuelScript
                             }
 
                             // Wait until Niko got to the position.
-                            Wait(2600);
+                            while (Player.Character.isInVehicle())
+                            {
+                                Wait(500);
+                            }
 
                             // Turn to the vehicle side, door side!
                             Player.Character.Task.TurnTo(LastVehicle.Position);
@@ -1154,12 +1150,6 @@ namespace FuelScript
                         // Cost one fuel bottle...
                         UsedFuelBottles += 1;
 
-                        // Reset black & white effect.
-                        if (Settings.GetValueBool("EFFECTS", "MISC", true))
-                        {
-                            GTA.Native.Function.Call("CLEAR_TIMECYCLE_MODIFIER");
-                        }
-
                         // Hurry up, we wasted some time!
                         Wait(600);
                         Player.Character.SayAmbientSpeech("HURRY_UP");
@@ -1233,7 +1223,7 @@ namespace FuelScript
                             if (CurrentVehicle.isRequiredForMission)
                             {
                                 // User chosen to drain even so?
-                                if (Settings.GetValueBool("MISSIONVEHICLESDRAIN", "MISC", false))
+                                if (Settings.GetValueBool("MVDRAIN", "MISC", false))
                                 {
                                     DrainFuel();
                                 }
@@ -1244,7 +1234,7 @@ namespace FuelScript
                                 DrainFuel();
                             }
                         }
-                        
+
                         // Don't know anything about a last vehicle?
                         if (LastVehicle == null || CurrentVehicle != LastVehicle)
                         {
@@ -1279,7 +1269,7 @@ namespace FuelScript
                             Log("Tick", "Player entered a vehicle: " + CurrentVehicle.Name.ToString() + ", Have " + Convert.ToInt32(CurrentVehicle.Metadata.Fuel) + " litre(s), Capacity - " + Convert.ToInt32(CurrentVehicle.Metadata.MaxTank) + " litre(s), Reserve - " + Convert.ToInt32(CurrentVehicle.Metadata.Reserve) + " litre(s), Drain - " + Convert.ToInt32(CurrentVehicle.Metadata.Drain) + " units.");
 
                             // Is current vehicle is required for an ingame mission?
-                            if (CurrentVehicle.isRequiredForMission && !Settings.GetValueBool("MISSIONVEHICLESDRAIN", "MISC", false))
+                            if (CurrentVehicle.isRequiredForMission && !Settings.GetValueBool("MVDRAIN", "MISC", false))
                             {
                                 // If so, fuel should not be drained, otherwise player will face so much trouble...
                                 // Specially, if the mission is based on time, he can't go refuel it, can he?
@@ -1342,20 +1332,20 @@ namespace FuelScript
                     CurrentVehicle.EngineRunning = false;
                     // CurrentVehicle.HazardLightsOn = true;
                 }
-                
+
                 // Set the scaling type.
                 e.Graphics.Scaling = FontScaling.ScreenUnits;
-                
+
                 // Get the dashboard location.
                 PointF Dashboard = new PointF(Settings.GetValueFloat("X", "DASHBOARD", 0.0f), Settings.GetValueFloat("Y", "DASHBOARD", 0.0f));
-                
+
                 // Is player in vehicle?
                 if (Player.Character.isInVehicle())
                 {
                     // Try to get the fuel level and draw it.
                     try { e.Graphics.DrawText("FUEL".PadRight(15) + CurrentVehicle.Metadata.Fuel, Dashboard.X, Dashboard.Y + 0.02f); }
                     catch { }
-                    
+
                     // Draw vehicle speed.
                     e.Graphics.DrawText("SPEED".PadRight(15) + "\t" + CurrentVehicle.Speed * 3.6f, Dashboard.X, Dashboard.Y + 0.04f);
                     // Draw vehicle engine health (0-1000 float).
@@ -1371,7 +1361,7 @@ namespace FuelScript
                     // Draw vehicle doors status.
                     e.Graphics.DrawText("DOOR".PadRight(15) + "\t" + ((CurrentVehicle.DoorLock == DoorLock.None) ? "UNLOCKED" : ((CurrentVehicle.DoorLock == DoorLock.CanOpenFromInside) ? "OUT LOCK" : "FULL LOCK")), Dashboard.X, Dashboard.Y + 0.16f);
                 }
-                
+
                 // Draw player position. X, Y and Z coordinates.
                 e.Graphics.DrawText("LOCATION", Dashboard.X, Dashboard.Y + 0.2f);
                 e.Graphics.DrawText(Player.Character.Position.X + ", " + Player.Character.Position.Y + ", " + Player.Character.Position.Z, Dashboard.X, Dashboard.Y + 0.22f);
@@ -1398,10 +1388,10 @@ namespace FuelScript
                     CurrentVehicle.EngineRunning = false;
                     // CurrentVehicle.HazardLightsOn = true;
                 }
-                
+
                 // Set the scaling type.
                 e.Graphics.Scaling = FontScaling.ScreenUnits;
-                
+
                 // If player is in a vehicle.
                 if (Player.Character.isInVehicle())
                 {
@@ -1411,11 +1401,11 @@ namespace FuelScript
                         e.Graphics.DrawText("FUEL", Dashboard.X, Dashboard.Y, Color.Beige);
                         e.Graphics.DrawText(Convert.ToInt32((float)CurrentVehicle.Metadata.Fuel).ToString(), Dashboard.X + 0.06f, Dashboard.Y, (CurrentVehicle.Metadata.Fuel <= CurrentVehicle.Metadata.Reserve) ? Color.Red : Color.Green);
                     }
-                    catch{}
-                    
+                    catch { }
+
                     // Draw vehicle speed.
                     e.Graphics.DrawText("SPEED", Dashboard.X, Dashboard.Y + 0.03f);
-                    
+
                     // If current vehicle is a boat, units needs to be converted to knots.
                     if (CurrentVehicle.Model.isBoat)
                     {
@@ -1452,10 +1442,10 @@ namespace FuelScript
                     CurrentVehicle.EngineRunning = false;
                     // CurrentVehicle.HazardLightsOn = true;
                 }
-                
+
                 // Set the scaling type.
                 e.Graphics.Scaling = FontScaling.ScreenUnits;
-                
+
                 // If player is in a vehicle.
                 if (Player.Character.isInVehicle())
                 {
@@ -1486,7 +1476,14 @@ namespace FuelScript
                         // Controls the Flashinging when on reserved fuel.
                         Flashing = (Flashing == 20) ? 0 : Flashing + 1;
                     }
-                    catch{}
+                    catch { }
+                }
+
+                // Draw Beta Watermark if the release is a beta release!
+                if (Settings.GetValueBool("BETA", "RELEASE", false))
+                {
+                    // At top left corner of the screen.
+                    e.Graphics.DrawSprite(BetaMark, 0.07f, 0.06f, 0.11f, 0.085f, 0);
                 }
             }
             catch (Exception crap)
