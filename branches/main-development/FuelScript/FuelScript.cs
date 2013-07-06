@@ -1318,7 +1318,6 @@ namespace FuelScript
         /// <param name="e"></param>
         private void FuelScript_PerFrameDrawing_devMode(object sender, GTA.GraphicsEventArgs e)
         {
-            /// random change by sandakelum
             try
             {
                 // Take care of lights and engine when refueling...
