@@ -1,19 +1,4 @@
 /*
-Copyright (c) 2013, Pedro Rodrigues <prodrigues1990@gmail.com>
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without 
-modification, are permitted provided that the following conditions are met:
-
-    - Redistributions of source code must retain the above copyright 
-      notice, this list of conditions and the following disclaimer.
-    - Redistributions in binary form must reproduce the above copyright 
-      notice, this list of conditions and the following disclaimer in
-      the documentation and/or other materials provided with the distribution.
-    - Neither the name of the author nor the names of its contributors 
-      may be used to endorse or promote products derived from this software
-      without specific prior written permission.
-
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -774,6 +759,7 @@ namespace FuelScript
                     // This is shown when the vehicle ran out of fuel.
                     if (Settings.GetValueBool("OUTOFFUELTEXT", "TEXTS", true))
                     {
+                        // changing this with chained if statments will be way more understandable, I haven't been able to, very confusing.
                         Game.DisplayText(((MaxFuelBottles - UsedFuelBottles) >= 1) ? ((CurrentVehicle.Speed == 0.0f) ? "Press " + Settings.GetValueKey("BOTTLEUSEKEY", "KEYS", Keys.U) + " button to inject an emergency fuel bottle. " + ((((MaxFuelBottles - UsedFuelBottles) - 1) >= 1) ? "You have " + (MaxFuelBottles - UsedFuelBottles) + " fuel bottle" + (((MaxFuelBottles - UsedFuelBottles) == 1) ? "" : "s") + " left.\n" + ((UsedFuelBottles > 0) ? "Refilling your " + UsedFuelBottles + " empty fuel bottle" + ((UsedFuelBottles == 1) ? "" : "s") + " costs $" + (UsedFuelBottles * FuelBottleCost) + " for you ($" + FuelBottleCost + " each)" : "A used fuel bottle can be refilled again for $" + FuelBottleCost + " at fueling stations") + "." : "\nLast fuel bottle, find a refueling station quickly!") : "You ran out of fuel. " + (((MaxFuelBottles - UsedFuelBottles) >= 1) ? "You have " + (MaxFuelBottles - UsedFuelBottles) + " emergency fuel bottle" + (((MaxFuelBottles - UsedFuelBottles) == 1) ? "" : "s") + " left." : "No emerygency fuel bottles left.") + "\nWait until the vehicle stops and engine is idle.") : "You ran out of fuel. Sorry, but this vehicle cannot be started.");
                     }
 
@@ -799,6 +785,7 @@ namespace FuelScript
                     // Another big dynamic text which shows when player inside of a fueling station radius.
                     if (Settings.GetValueBool("FUELINGSTATIONTEXT", "TEXTS", true))
                     {
+                        // changing this with chained if statments will be way more understandable, I haven't been able to, very confusing.
                         Game.DisplayText("Welcome to " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " Fueling Station " + isAtFuelStation() + ". We offer fuel just for $" + Settings.GetValueFloat("PRICE", "STATION" + isAtFuelStation(), 6.99f) + " per litre.\nHold " + Settings.GetValueKey("REFUELKEY", "KEYS", Keys.E) + " button to purchase full tank fuel which costs $" + Convert.ToInt32(((CurrentVehicle.Metadata.MaxTank - CurrentVehicle.Metadata.Fuel) * Settings.GetValueFloat("PRICE", StationName + isAtFuelStation(), 6.99f))) + " at this moment." + (((MaxFuelBottles - UsedFuelBottles) < MaxFuelBottles) ? "\nPress " + Settings.GetValueKey("BOTTLEBUYKEY", "KEYS", Keys.B) + " to buy a fuel bottle for $" + FuelBottleCost + ". You can buy " + UsedFuelBottles + " more bottle" + ((UsedFuelBottles == 1) ? "" : "s") + "." : ""));
                     }
 
@@ -1444,16 +1431,24 @@ namespace FuelScript
                     try
                     {
                         // Calculate fuel availablity...
-                        float FuelAvailability = (Convert.ToInt32(CurrentVehicle.Metadata.Fuel) * 100) / Convert.ToInt32(CurrentVehicle.Metadata.MaxTank);
+                        float FuelAvailability = (CurrentVehicle.Metadata.Fuel * 100) / CurrentVehicle.Metadata.MaxTank;
 
                         // NOTE: This is to know how much fuel is remaining, in litres. As we have fuel bottles indicator in place, this has been commented out.
                         // e.Graphics.DrawText(Convert.ToInt32((float)CurrentVehicle.Metadata.Fuel).ToString() + " l", Dashboard.X - 0.035f, Dashboard.Y - 0.012f, (CurrentVehicle.Metadata.Fuel <= CurrentVehicle.Metadata.Reserve) ? ((Flashing < 5) ? GTA.ColorIndex.SmokeSilverPoly : (GTA.ColorIndex)35) : GTA.ColorIndex.SmokeSilverPoly, FuelMeterFont);
 
                         // Draw the fuel bottles status (such as "2/5").
-                        e.Graphics.DrawText(Convert.ToInt32((int)(MaxFuelBottles - UsedFuelBottles)).ToString() + "/" + Convert.ToInt32((int)MaxFuelBottles).ToString(), Dashboard.X - 0.030f, Dashboard.Y - 0.011f, ((MaxFuelBottles - UsedFuelBottles) <= 1) ? ((Flashing < 5) ? GTA.ColorIndex.SmokeSilverPoly : (GTA.ColorIndex)35) : GTA.ColorIndex.SmokeSilverPoly, FuelMeterFont);
+                        e.Graphics.DrawText(
+                            String.Format("{0}/{1}", MaxFuelBottles - UsedFuelBottles, MaxFuelBottles),
+                            Dashboard.X - 0.030f, 
+                            Dashboard.Y - 0.011f, 
+                            (MaxFuelBottles - UsedFuelBottles <= 1) ? ((Flashing < 5) ? GTA.ColorIndex.SmokeSilverPoly : (GTA.ColorIndex)35) : GTA.ColorIndex.SmokeSilverPoly, // at this point, if we have issues about performance the color can very well be select when any of the 3 conditions change in the first place
+                            FuelMeterFont);
 
                         // Draw fuel level status (such as "57%").
-                        e.Graphics.DrawText(Convert.ToInt32((float)FuelAvailability).ToString("00") + "%", (Dashboard.X + GaugeWidth) + 0.006f, Dashboard.Y - 0.012f, (CurrentVehicle.Metadata.Fuel <= CurrentVehicle.Metadata.Reserve) ? ((Flashing < 5) ? GTA.ColorIndex.SmokeSilverPoly : (GTA.ColorIndex)35) : GTA.ColorIndex.SmokeSilverPoly, FuelMeterFont);
+                        // I'm not sure about this line and I can't test it. But String.Format("{0:00}%", FuelAvailability) should do the trick and it much faster
+                        e.Graphics.DrawText(Convert.ToInt32((float)FuelAvailability).ToString("00") + "%", (Dashboard.X + GaugeWidth) + 0.006f, Dashboard.Y - 0.012f,
+                            (CurrentVehicle.Metadata.Fuel <= CurrentVehicle.Metadata.Reserve) ? ((Flashing < 5) ? GTA.ColorIndex.SmokeSilverPoly : (GTA.ColorIndex)35) : GTA.ColorIndex.SmokeSilverPoly, // at this point, if we have issues about performance the color can very well be select when any of the 3 conditions change in the first place
+                            FuelMeterFont); 
 
                         // Draw fuel level meter's black background.
                         e.Graphics.DrawRectangle(new RectangleF(Dashboard.X - 0.0035f, Dashboard.Y - 0.004f, GaugeWidth, 0.0125f), GTA.ColorIndex.Black);
@@ -1463,10 +1458,11 @@ namespace FuelScript
 
                         // Draw the front rectange widening how much fuel vehicle has.
                         // Green as normal, and red when running on reserved.
-                        e.Graphics.DrawRectangle(new RectangleF(Dashboard.X, Dashboard.Y, (CurrentVehicle.Metadata.Fuel * (GaugeWidth - 0.008f)) / CurrentVehicle.Metadata.MaxTank, 0.006f), (CurrentVehicle.Metadata.Fuel <= CurrentVehicle.Metadata.Reserve) ? ((Flashing < 5) ? (GTA.ColorIndex)1 : (GTA.ColorIndex)35) : (GTA.ColorIndex)50);
+                        e.Graphics.DrawRectangle(new RectangleF(Dashboard.X, Dashboard.Y, (CurrentVehicle.Metadata.Fuel * (GaugeWidth - 0.008f)) / CurrentVehicle.Metadata.MaxTank, 0.006f),
+                            (CurrentVehicle.Metadata.Fuel <= CurrentVehicle.Metadata.Reserve) ? ((Flashing < 5) ? (GTA.ColorIndex)1 : (GTA.ColorIndex)35) : (GTA.ColorIndex)50); // at this point, if we have issues about performance the color can very well be select when any of the 3 conditions change in the first place
 
                         // Controls the Flashinging when on reserved fuel.
-                        Flashing = (Flashing == 20) ? 0 : Flashing + 1;
+                        Flashing = (Flashing == 20) ? 0 : Flashing++;
                     }
                     catch { }
                 }
