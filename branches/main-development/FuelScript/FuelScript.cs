@@ -62,10 +62,19 @@ namespace FuelScript
             string extGuid = Settings.GetValueString("GUID", "MISC", "").Trim();
             if (extGuid != "")
             {
+                ///
+                /// Usage example:
+                /// SendScriptCommand(new Guid("3583e09d-6c44-4820-85e9-93926307d4f8"), "SetCurrentFuel", 100.0f);
+                /// Still missing documentation on how to use this for what, initially was intended to implement the car saving feature externally.
+                ///
                 BindScriptCommand("GetCurrentFuel", new ScriptCommandDelegate(SendCurrentFuel));
                 BindScriptCommand("GetCurrentFuelPercentage", new ScriptCommandDelegate(SendCurrentFuelPercentage));
                 BindScriptCommand("GetCurrentDrain", new ScriptCommandDelegate(SendCurrentDrain));
                 BindScriptCommand("GetCurrentFuelBottles", new ScriptCommandDelegate(SendCurrentFuelBottles));
+                BindScriptCommand("SetCurrentFuel", new ScriptCommandDelegate(SetCurrentFuel));
+                BindScriptCommand("SetCurrentFuelPercentage", new ScriptCommandDelegate(SetCurrentFuelPercentage));
+                BindScriptCommand("SetVehicleFuel", new ScriptCommandDelegate(SetVehicleFuel));
+                BindScriptCommand("SetVehicleFuelPercentage", new ScriptCommandDelegate(SetVehicleFuelPercentage));
                 ExtScriptGUID = new Guid(extGuid);
             }
             // No GUID?
@@ -467,6 +476,72 @@ namespace FuelScript
                     SendScriptCommand(ExtScriptGUID, "CurrentFuelBottles", (this.MaxFuelBottles - this.UsedFuelBottles));
             }
             catch (Exception crap) { Log("ERROR: SendCurrentFuelBottles", crap.Message); }
+        }
+        /// <summary>
+        /// Sets the current fuel level of the current car with the value specified by Parameter[0], this value must be parseable to float.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="Parameter"></param>
+        private void SetCurrentFuel(GTA.Script sender, GTA.ObjectCollection Parameter)
+        {
+            try
+            {
+                if (Player.Character.isInVehicle())
+                {
+                    float newFuelValue = Parameter.Convert<float>(0);
+                    CurrentVehicle.Metadata.Fuel = newFuelValue;
+                }
+            }
+            catch (Exception crap) { Log("ERROR: SendCurrentFuel", crap.Message); }
+        }
+        /// <summary>
+        /// Sets the current fuel level of the current car with the percentage value specified by Parameter[0], this value must be parseable to float.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="Parameter"></param>
+        private void SetCurrentFuelPercentage(GTA.Script sender, GTA.ObjectCollection Parameter)
+        {
+            try
+            {
+                if (Player.Character.isInVehicle())
+                {
+                    float FuelPercentage = Parameter.Convert<float>(0);
+                    float newFuelValue = (FuelPercentage * CurrentVehicle.Metadata.MaxTank) / 100;
+                    CurrentVehicle.Metadata.Fuel = newFuelValue;
+                }
+            }
+            catch (Exception crap) { Log("ERROR: SetCurrentFuelPercentage", crap.Message); }
+        }
+        /// <summary>
+        /// Sets the current fuel level of the car specified by Parameter[1] with the value specified by Parameter[0], this value must be parseable to float.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="Parameter"></param>
+        private void SetVehicleFuel(GTA.Script sender, GTA.ObjectCollection Parameter)
+        {
+            try
+            {
+                Vehicle v = Parameter.Convert<Vehicle>(1);
+                float newFuelValue = Parameter.Convert<float>(0);
+                v.Metadata.Fuel = newFuelValue;
+            }
+            catch (Exception crap) { Log("ERROR: SetVehicleFuel", crap.Message); }
+        }
+        /// <summary>
+        /// Sets the current fuel level of the car specified by Parameter[1] with the percentage value specified by Parameter[0], this value must be parseable to float.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="Parameter"></param>
+        private void SetVehicleFuelPercentage(GTA.Script sender, GTA.ObjectCollection Parameter)
+        {
+            try
+            {
+                Vehicle v = Parameter.Convert<Vehicle>(1);
+                float FuelPercentage = Parameter.Convert<float>(0);
+                float newFuelValue = (FuelPercentage * CurrentVehicle.Metadata.MaxTank) / 100;
+                v.Metadata.Fuel = newFuelValue;
+            }
+            catch (Exception crap) { Log("ERROR: SetVehicleFuelPercentage", crap.Message); }
         }
         /// <summary>
         /// Get os name and SP
