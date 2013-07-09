@@ -632,7 +632,7 @@ namespace FuelScript
                         CurrentVehicle.DoorLock = DoorLock.ImpossibleToOpen;
 
                         // Fuel Service Drive To position.
-                        Vector3 DriveToPosition = CurrentVehicle.Position.Around(15.0f);
+                        Vector3 DriveToPosition = CurrentVehicle.GetOffsetPosition(new Vector3(5.0f, 7.0f, 0.0f));
 
                         // Hood position.
                         Vector3 HoodPosition = CurrentVehicle.GetOffsetPosition(new Vector3(0.0f, 3.0f, 0.0f));
@@ -730,7 +730,7 @@ namespace FuelScript
                         Log("PhoneNumberHandler", "Player called to the emergency fuel services.");
 
                         // Wait until he gets near with his vehicle.
-                        while (Player.Character.Position.DistanceTo(ServiceVehicle.Position) > 10.0f)
+                        while (DriveToPosition.DistanceTo(ServiceVehicle.Position) > 3.0f)
                         {
                             Wait(500);
                         }
