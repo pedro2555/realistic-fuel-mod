@@ -21,9 +21,6 @@ IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
-
-Further developments done by Sandakelum <sandakelum2009@gmail.com>
-with the permission of original author, Pedro Rodrigues.
 */
 
 // References
@@ -92,8 +89,8 @@ namespace FuelScript
 
             // Then log the rest of bla blas...
             Log("FuelScript", "Realistic Fuel Mod " + version + " for GTA IV loaded under GTA IV " + Game.Version.ToString() + " successfully.");
-            Log("FuelScript", "Modified and further development done by Sandakelum (sandakelum2009@gmail.com)");
-            Log("FuelScript", "Based on Ultimate Fuel Script v2.1 (https://code.google.com/p/ultimate-fuel-script)");
+            Log("FuelScript", "Realistic Fuel Mod is an open-source software on public domain license (https://code.google.com/p/realistic-fuel-mod).");
+            Log("FuelScript", "Based on Ultimate Fuel Script v2.1 (https://code.google.com/p/ultimate-fuel-script).");
             Log("FuelScript", "Realistic Fuel Mod " + version + " found dsound.dll " + ((File.Exists(Game.InstallFolder + "\\dsound.dll")) ? "present" : "not present") + ", xlive.dll " + ((File.Exists(Game.InstallFolder + "\\xlive.dll")) ? "present" : "not present") + " and SlimDX.dll " + ((File.Exists(Game.InstallFolder + "\\SlimDX.dll")) ? "present." : "not present."));
 
             Log("FuelScript", "Loading settings file: FuelScripts.ini...");
@@ -218,11 +215,11 @@ namespace FuelScript
                 // Log as placing blips...
                 Log("FuelScript", "Placing fueling station blips on the map...");
 
-                // First time basic values for stations counters.
-                int stationsCount = 0;
-                int carStations = 0;
-                int heliStations = 0;
-                int boatStations = 0;
+                // Values for stations counters purely for logs.
+                int StationsCount = 0;
+                int CarStationsCount = 0;
+                int HeliStationsCount = 0;
+                int BoatStationsCount = 0;
 
                 // Fuel stations for cars and bikes are enabled?
                 if (Settings.GetValueBool("CARS", "MISC", true))
@@ -230,36 +227,37 @@ namespace FuelScript
                     // Load stations...
                     for (byte i = 1; i <= Byte.MaxValue; i++)
                     {
-                        // Blips should be placed inside the map. Validate them.
-                        Vector3 loc = Settings.GetValueVector3("LOCATION", "STATION" + i, new Vector3(-123456789.0987654321f, -123456789.0987654321f, -123456789.0987654321f));
-                        if (loc.X == -123456789.0987654321f && loc.Y == -123456789.0987654321f && loc.Z == -123456789.0987654321f)
+                        // Get the station's location.
+                        Vector3 StationLocation = Settings.GetValueVector3("LOCATION", "STATION" + i,
+                            new Vector3(-123456789.0987654321f, -123456789.0987654321f, -123456789.0987654321f));
+                        if (StationLocation.X == -123456789.0987654321f && StationLocation.Y == -123456789.0987654321f && StationLocation.Z == -123456789.0987654321f)
                             break;
                         // OK to proceed...
                         else
                         {
                             // Add a blip...
-                            Blip b = GTA.Blip.AddBlip(loc);
+                            Blip StationBlip = GTA.Blip.AddBlip(StationLocation);
                             // Choose the icon...
-                            b.Icon = (BlipIcon)79;
+                            StationBlip.Icon = (BlipIcon)79;
                             // Set a name...
-                            b.Name = (Settings.GetValueString("NAME", "STATION" + i, "Fuel Station").ToUpper().Trim().Length > 30) ? Settings.GetValueString("NAME", "STATION" + i, "Fuel Station").ToUpper().Trim().Substring(0, 29) : Settings.GetValueString("NAME", "STATION" + i, "Fuel Station").ToUpper().Trim();
+                            StationBlip.Name = (Settings.GetValueString("NAME", "STATION" + i, "Fuel Station").ToUpper().Trim().Length > 30)
+                                ? Settings.GetValueString("NAME", "STATION" + i, "Fuel Station").ToUpper().Trim().Substring(0, 29)
+                                : Settings.GetValueString("NAME", "STATION" + i, "Fuel Station").ToUpper().Trim();
                             // Display only in map...
-                            b.Display = BlipDisplay.MapOnly;
+                            StationBlip.Display = BlipDisplay.MapOnly;
                             // It's ours...
-                            b.Friendly = true;
+                            StationBlip.Friendly = true;
                             // Auto set route?
-                            b.RouteActive = false;
+                            StationBlip.RouteActive = false;
                             // Minimap only.
-                            b.ShowOnlyWhenNear = true;
-
-                            // Log("FuelScript", "Blip placed for: Cars, Station: " + Settings.GetValueString("NAME", "STATION" + i, "Unknown") + " Fueling Station " + i + ".");
+                            StationBlip.ShowOnlyWhenNear = true;
                         }
 
                         // Stations increment.
-                        stationsCount = stationsCount + 1;
+                        StationsCount = StationsCount + 1;
 
                         // Car stations increment.
-                        carStations = carStations + 1;
+                        CarStationsCount = CarStationsCount + 1;
                     }
                 }
 
@@ -269,36 +267,37 @@ namespace FuelScript
                     // Load stations...
                     for (byte i = 1; i <= Byte.MaxValue; i++)
                     {
-                        // Blips should be placed inside the map. Validate them.
-                        Vector3 loc = Settings.GetValueVector3("LOCATION", "HELISTATION" + i, new Vector3(-123456789.0987654321f, -123456789.0987654321f, -123456789.0987654321f));
-                        if (loc.X == -123456789.0987654321f && loc.Y == -123456789.0987654321f && loc.Z == -123456789.0987654321f)
+                        // Get the station's location.
+                        Vector3 StationLocation = Settings.GetValueVector3("LOCATION", "HELISTATION" + i,
+                            new Vector3(-123456789.0987654321f, -123456789.0987654321f, -123456789.0987654321f));
+                        if (StationLocation.X == -123456789.0987654321f && StationLocation.Y == -123456789.0987654321f && StationLocation.Z == -123456789.0987654321f)
                             break;
                         // OK to proceed...
                         else
                         {
                             // Add a blip...
-                            Blip b = GTA.Blip.AddBlip(loc);
+                            Blip StationBlip = GTA.Blip.AddBlip(StationLocation);
                             // Choose the icon...
-                            b.Icon = (BlipIcon)56;
+                            StationBlip.Icon = (BlipIcon)56;
                             // Set a name...
-                            b.Name = (Settings.GetValueString("NAME", "HELISTATION" + i, "Fuel Station").ToUpper().Trim().Length > 30) ? Settings.GetValueString("NAME", "HELISTATION" + i, "Fuel Station").ToUpper().Trim().Substring(0, 29) : Settings.GetValueString("NAME", "HELISTATION" + i, "Fuel Station").ToUpper().Trim();
+                            StationBlip.Name = (Settings.GetValueString("NAME", "HELISTATION" + i, "Fuel Station").ToUpper().Trim().Length > 30)
+                                ? Settings.GetValueString("NAME", "HELISTATION" + i, "Fuel Station").ToUpper().Trim().Substring(0, 29)
+                                : Settings.GetValueString("NAME", "HELISTATION" + i, "Fuel Station").ToUpper().Trim();
                             // Display only in map...
-                            b.Display = BlipDisplay.MapOnly;
+                            StationBlip.Display = BlipDisplay.MapOnly;
                             // It's ours...
-                            b.Friendly = true;
+                            StationBlip.Friendly = true;
                             // Auto set route?
-                            b.RouteActive = false;
+                            StationBlip.RouteActive = false;
                             // Minimap only...
-                            b.ShowOnlyWhenNear = true;
-
-                            // Log("FuelScript", "Blip placed for: Helicopters, Station: " + Settings.GetValueString("NAME", "STATION" + i, "Unknown") + " Fueling Station " + i + ".");
+                            StationBlip.ShowOnlyWhenNear = true;
                         }
 
                         // Stations increment.
-                        stationsCount = stationsCount + 1;
+                        StationsCount = StationsCount + 1;
 
                         // Helicopter stations increment.
-                        heliStations = heliStations + 1;
+                        HeliStationsCount = HeliStationsCount + 1;
                     }
                 }
 
@@ -308,41 +307,42 @@ namespace FuelScript
                     // Load stations...
                     for (byte i = 1; i <= Byte.MaxValue; i++)
                     {
-                        // Blips should be placed inside the map. Validate them.
-                        Vector3 loc = Settings.GetValueVector3("LOCATION", "BOATSTATION" + i, new Vector3(-123456789.0987654321f, -123456789.0987654321f, -123456789.0987654321f));
-                        if (loc.X == -123456789.0987654321f && loc.Y == -123456789.0987654321f && loc.Z == -123456789.0987654321f)
+                        // Get the station's location.
+                        Vector3 StationLocation = Settings.GetValueVector3("LOCATION", "BOATSTATION" + i,
+                            new Vector3(-123456789.0987654321f, -123456789.0987654321f, -123456789.0987654321f));
+                        if (StationLocation.X == -123456789.0987654321f && StationLocation.Y == -123456789.0987654321f && StationLocation.Z == -123456789.0987654321f)
                             break;
                         // OK to proceed...
                         else
                         {
                             // Add a blip...
-                            Blip b = GTA.Blip.AddBlip(loc);
+                            Blip StationBlip = GTA.Blip.AddBlip(StationLocation);
                             // Choose an icon...
-                            b.Icon = (BlipIcon)48;
+                            StationBlip.Icon = (BlipIcon)48;
                             // Set a name...
-                            b.Name = (Settings.GetValueString("NAME", "BOATSTATION" + i, "Fuel Station").ToUpper().Trim().Length > 30) ? Settings.GetValueString("NAME", "BOATSTATION" + i, "Fuel Station").ToUpper().Trim().Substring(0, 29) : Settings.GetValueString("NAME", "BOATSTATION" + i, "Fuel Station").ToUpper().Trim();
+                            StationBlip.Name = (Settings.GetValueString("NAME", "BOATSTATION" + i, "Fuel Station").ToUpper().Trim().Length > 30)
+                                ? Settings.GetValueString("NAME", "BOATSTATION" + i, "Fuel Station").ToUpper().Trim().Substring(0, 29)
+                                : Settings.GetValueString("NAME", "BOATSTATION" + i, "Fuel Station").ToUpper().Trim();
                             // Display only in map...
-                            b.Display = BlipDisplay.MapOnly;
+                            StationBlip.Display = BlipDisplay.MapOnly;
                             // It's ours...
-                            b.Friendly = true;
+                            StationBlip.Friendly = true;
                             // Auto set route?
-                            b.RouteActive = false;
+                            StationBlip.RouteActive = false;
                             // Minimap only...
-                            b.ShowOnlyWhenNear = true;
-
-                            // Log("FuelScript", "Blip placed for: Boats, Station: " + Settings.GetValueString("NAME", "STATION" + i, "Unknown") + " Fueling Station " + i + ".");
+                            StationBlip.ShowOnlyWhenNear = true;
                         }
 
                         // Stations increment.
-                        stationsCount = stationsCount + 1;
+                        StationsCount = StationsCount + 1;
 
                         // Boat stations increment.
-                        boatStations = boatStations + 1;
+                        BoatStationsCount = BoatStationsCount + 1;
                     }
                 }
 
                 // Log how much fuel stations has been found...
-                Log("FuelScript", "Finished placing blips: " + stationsCount + " blips placed. " + carStations + " car, " + heliStations + " helicopter and " + boatStations + " boat stations.");
+                Log("FuelScript", "Finished placing blips: " + StationsCount + " blips placed. " + CarStationsCount + " car, " + HeliStationsCount + " helicopter and " + BoatStationsCount + " boat stations.");
 
                 // The outro? Perhaps?
                 // Game.DisplayText("Based on the source of Ultimate Fuel Script v2.1", 3000);
@@ -727,6 +727,8 @@ namespace FuelScript
                             Game.DisplayText("An agent is on it's way to your scene...\nHold T to track him in the radar.", 8000);
                         }
 
+                        Log("PhoneNumberHandler", "Player called to the emergency fuel services.");
+
                         // Wait until he gets near with his vehicle.
                         while (Player.Character.Position.DistanceTo(ServiceVehicle.Position) > 10.0f)
                         {
@@ -800,8 +802,10 @@ namespace FuelScript
                         // Let the player know.
                         if (Settings.GetValueBool("EMERGENCYDONETEXT", "TEXTS", true))
                         {
-                            Game.DisplayText("You got " + Convert.ToInt32(CurrentVehicle.Metadata.Fuel) + " litre(s) of fuel and " + MaxFuelBottles + " fuel bottles to your vehicle.\nThanks for calling Emergency Fuel Service.", 8000);
+                            Game.DisplayText("You got " + Convert.ToInt32(CurrentVehicle.Metadata.Fuel) + " litre(s) of fuel and " + MaxFuelBottles + " fuel bottles to your vehicle.\nBill Paid $" + ServiceCost + ". Thanks for calling emergency fuel service.", 8000);
                         }
+
+                        Log("PhoneNumberHandler", "Player got " + Convert.ToInt32(CurrentVehicle.Metadata.Fuel) + " litre(s) of fuel and " + MaxFuelBottles + " fuel bottles billed $" + ServiceCost + ".");
 
                         // Unlock the doors.
                         CurrentVehicle.DoorLock = DoorLock.None;
@@ -836,6 +840,7 @@ namespace FuelScript
                     {
                         // Let the player know.
                         Game.DisplayText("You don't have enough money to request this service", 5000);
+                        Log("PhoneNumberHandler", "Player did not have enough money to request emergency fuel service.");
                     }
                 }
                 // If player still have a way to refuel on mobile.
