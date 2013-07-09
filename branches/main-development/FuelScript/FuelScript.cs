@@ -50,7 +50,13 @@ namespace FuelScript
             // Get the file version from the assembled DLL.
             Assembly assembly = Assembly.GetExecutingAssembly();
             FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(Game.InstallFolder + "\\scripts\\FuelScript.net.dll");
-            string version = fvi.FileVersion + ((Settings.GetValueBool("BETA", "RELEASE", false)) ? " BETA" : "");
+            string versionPrepend = "";
+            #IF DEBUG
+            versionPrepend = "BETA";
+            #ELSE
+            versionPrepend = "RELEASE";
+            #ENDIF
+            string version = fvi.FileVersion + versionPrepend;
 
             // Script command functions...
             GUID = new Guid("3583e09d-6c44-4820-85e9-93926307d4f8");
@@ -197,10 +203,8 @@ namespace FuelScript
             FuelMeterFont.EffectColor = ColorIndex.Black;
 
             // Set the beta watermark PNG file.
-            if (Settings.GetValueBool("BETA", "RELEASE", false))
-            {
-                BetaMark = Resources.GetTexture("beta_mark.png");
-            }
+            #IF DEBUG
+            BetaMark = Resources.GetTexture("beta_mark.png");
 
             /// <summary>
             /// Loads all the stations.
@@ -1805,11 +1809,8 @@ namespace FuelScript
                 }
 
                 // Draw Beta Watermark if the release is a beta release!
-                if (Settings.GetValueBool("BETA", "RELEASE", false))
-                {
-                    // At top left corner of the screen.
-                    e.Graphics.DrawSprite(BetaMark, 0.07f, 0.06f, 0.11f, 0.085f, 0);
-                }
+                #IF DEBUG
+                e.Graphics.DrawSprite(BetaMark, 0.07f, 0.06f, 0.11f, 0.085f, 0);
             }
             catch (Exception crap)
             {
