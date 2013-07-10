@@ -33,11 +33,13 @@
             this.pnlDashboard = new System.Windows.Forms.Panel();
             this.lblDashboard = new System.Windows.Forms.Label();
             this.btnCopy = new System.Windows.Forms.Button();
+            this.lblHelp = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // lblRes
             // 
             this.lblRes.AutoSize = true;
+            this.lblRes.BackColor = System.Drawing.Color.Transparent;
             this.lblRes.ForeColor = System.Drawing.Color.Lime;
             this.lblRes.Location = new System.Drawing.Point(12, 17);
             this.lblRes.Name = "lblRes";
@@ -60,13 +62,16 @@
             // 
             // pnlDashboard
             // 
-            this.pnlDashboard.BackColor = System.Drawing.Color.DarkGreen;
+            this.pnlDashboard.BackColor = System.Drawing.Color.Black;
             this.pnlDashboard.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pnlDashboard.Location = new System.Drawing.Point(269, 193);
+            this.pnlDashboard.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.pnlDashboard.ForeColor = System.Drawing.Color.DarkGreen;
+            this.pnlDashboard.Location = new System.Drawing.Point(90, 167);
             this.pnlDashboard.Name = "pnlDashboard";
-            this.pnlDashboard.Size = new System.Drawing.Size(169, 14);
+            this.pnlDashboard.Size = new System.Drawing.Size(131, 10);
             this.pnlDashboard.TabIndex = 2;
             this.pnlDashboard.LocationChanged += new System.EventHandler(this.pnlDashboard_LocationChanged);
+            this.pnlDashboard.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlDashboard_Paint);
             this.pnlDashboard.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pnlDashboard_MouseDown);
             this.pnlDashboard.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pnlDashboard_MouseMove);
             this.pnlDashboard.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pnlDashboard_MouseUp);
@@ -74,8 +79,9 @@
             // lblDashboard
             // 
             this.lblDashboard.AutoSize = true;
+            this.lblDashboard.BackColor = System.Drawing.Color.Transparent;
             this.lblDashboard.ForeColor = System.Drawing.Color.Lime;
-            this.lblDashboard.Location = new System.Drawing.Point(12, 41);
+            this.lblDashboard.Location = new System.Drawing.Point(12, 57);
             this.lblDashboard.Name = "lblDashboard";
             this.lblDashboard.Size = new System.Drawing.Size(136, 13);
             this.lblDashboard.TabIndex = 0;
@@ -94,17 +100,30 @@
             this.btnCopy.UseVisualStyleBackColor = true;
             this.btnCopy.Click += new System.EventHandler(this.btnCopy_Click);
             // 
+            // lblHelp
+            // 
+            this.lblHelp.AutoSize = true;
+            this.lblHelp.BackColor = System.Drawing.Color.Transparent;
+            this.lblHelp.ForeColor = System.Drawing.Color.Gold;
+            this.lblHelp.Location = new System.Drawing.Point(58, 138);
+            this.lblHelp.Name = "lblHelp";
+            this.lblHelp.Size = new System.Drawing.Size(195, 13);
+            this.lblHelp.TabIndex = 0;
+            this.lblHelp.Text = "Move this around to the desired position";
+            // 
             // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.DimGray;
+            this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.ClientSize = new System.Drawing.Size(866, 434);
             this.Controls.Add(this.pnlDashboard);
             this.Controls.Add(this.btnCopy);
             this.Controls.Add(this.btnExit);
             this.Controls.Add(this.lblDashboard);
             this.Controls.Add(this.lblRes);
+            this.Controls.Add(this.lblHelp);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -126,6 +145,7 @@
         private System.Windows.Forms.Panel pnlDashboard;
         private System.Windows.Forms.Label lblDashboard;
         private System.Windows.Forms.Button btnCopy;
+        private System.Windows.Forms.Label lblHelp;
     }
 }
 
