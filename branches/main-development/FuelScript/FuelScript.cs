@@ -1511,54 +1511,52 @@ namespace FuelScript
         {
             try
             {
-                // Make sure Niko is in a vehicle.
-                if (Player.Character.isInVehicle())
+                // Make sure Niko is in a vehicle and as driver.
+                if (Player.Character.isInVehicle() && Player == CurrentVehicle.GetPedOnSeat(VehicleSeat.Driver))
                 {
-                    // Make sure player is seated on the driving seat.
-                    if (Player == CurrentVehicle.GetPedOnSeat(VehicleSeat.Driver))
+                    // If player set as refueling...
+                    if (Refueling)
                     {
-                        if (Refueling)
+                        // Make sure he does.
+                        ReFuel();
+                    }
+                    // If he have plenty of fuel and just cruising around...
+                    else
+                    {
+                        // Take care of fuel draining
+                        // Vehicle required for mission?
+                        if (CurrentVehicle.isRequiredForMission)
                         {
-                            // Refuel
-                            ReFuel();
-                        }
-                        else
-                        {
-                            // Take care of fuel draining
-                            // Vehicle required for mission?
-                            if (CurrentVehicle.isRequiredForMission)
+                            // User chosen to drain even so?
+                            if (Settings.GetValueBool("MVDRAIN", "MISC", false))
                             {
-                                // User chosen to drain even so?
-                                if (Settings.GetValueBool("MVDRAIN", "MISC", false))
-                                {
-                                    DrainFuel();
-                                }
-                            }
-                            // Free roam vehicles?
-                            else
-                            {
+                                // Drain fuel in mission required vehicles too then.
                                 DrainFuel();
                             }
                         }
-
-                        // Don't know anything about a last vehicle?
-                        if (LastVehicle == null || CurrentVehicle != LastVehicle)
+                        // Free roam vehicles?
+                        else
                         {
-                            OnReserve = false;
-                            LastVehicle = CurrentVehicle;
+                            // Free roam vehicles always should drain fuel.
+                            DrainFuel();
                         }
                     }
-                    // Niko is not on the driving seat?
-                    else
+
+                    // Don't know anything about a last vehicle?
+                    if (LastVehicle == null || CurrentVehicle != LastVehicle)
                     {
-                        // If so, he might be taking a lift from a friend or something, right?
-                        LastVehicle = null;
+                        // Set as not on reserve.
+                        OnReserve = false;
+
+                        // Here you go, get current vehicle as the last vehicle.
+                        // It's not like player is glued to the vehicle right?
+                        LastVehicle = CurrentVehicle;
                     }
                 }
                 // Niko is not in a vehicle?
                 else
                 {
-                    // If so...
+                    // If so... yeah... no last vehicle.
                     LastVehicle = null;
                 }
 
