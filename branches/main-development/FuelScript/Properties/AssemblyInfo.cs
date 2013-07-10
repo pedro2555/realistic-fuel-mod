@@ -10,8 +10,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("ScriptHook Script")]
 [assembly: AssemblyProduct("FuelScript")]
-[assembly: AssemblyCopyright("Copyright © 2013 Realistic Fuel Mod. All Rights Reserved.")]
-[assembly: AssemblyTrademark("Copyright © 2013 Realistic Fuel Mod. All Rights Reserved.")]
+[assembly: AssemblyCopyright("Public Domain Software")]
+[assembly: AssemblyTrademark("Public Domain Software")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
