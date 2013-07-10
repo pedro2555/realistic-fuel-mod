@@ -1408,9 +1408,9 @@ namespace FuelScript
                             Player.Character.Task.EnterVehicle(LastVehicle, VehicleSeat.Driver);
 
                             // Wait until Niko get's back on vehicle if he's outside.
-                            while (!Player.Character.isInVehicle())
+                            while (!Player.Character.isInVehicle() || Player.Character.CurrentVehicle.GetPedOnSeat(VehicleSeat.Driver) != Player.Character)
                             {
-                                Wait(500);
+                                Wait(100);
                             }
                         }
                         // If it a helicopter, boat or a bus...
