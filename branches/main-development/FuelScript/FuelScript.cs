@@ -51,11 +51,11 @@ namespace FuelScript
             Assembly assembly = Assembly.GetExecutingAssembly();
             FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(Game.InstallFolder + "\\scripts\\FuelScript.net.dll");
             string versionPrepend = "";
-            #IF DEBUG
+#if DEBUG
             versionPrepend = "BETA";
-            #ELSE
+#else
             versionPrepend = "RELEASE";
-            #ENDIF
+#endif
             string version = fvi.FileVersion + versionPrepend;
 
             // Script command functions...
@@ -203,9 +203,9 @@ namespace FuelScript
             FuelMeterFont.EffectColor = ColorIndex.Black;
 
             // Set the beta watermark PNG file.
-            #IF DEBUG
+#if DEBUG
             BetaMark = Resources.GetTexture("beta_mark.png");
-
+#endif
             /// <summary>
             /// Loads all the stations.
             /// There are 3 types of stations: STATION, HELISTATION, BOATSTATION. 
@@ -1809,8 +1809,9 @@ namespace FuelScript
                 }
 
                 // Draw Beta Watermark if the release is a beta release!
-                #IF DEBUG
+#if DEBUG
                 e.Graphics.DrawSprite(BetaMark, 0.07f, 0.06f, 0.11f, 0.085f, 0);
+#endif
             }
             catch (Exception crap)
             {
