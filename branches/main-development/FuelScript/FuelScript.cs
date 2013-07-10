@@ -172,7 +172,7 @@ namespace FuelScript
             SpeedMultiplier = (Settings.GetValueString("SPEED", "MISC", "KPH").ToUpper().Trim() == "KPH") ? 3.6f : 2.23693629f;
 
             // Log key mappings for diagnostics (not really necessary, whatever).
-            Log("FuelScript", "Settings: Refuel Key - " + Settings.GetValueKey("REFUELKEY", "KEYS", Keys.E) + ", Bottle Use Key - " + Settings.GetValueKey("BOTTLEUSEKEY", "KEYS", Keys.U) + ", Bottle Buy Key - " + Settings.GetValueKey("BOTTLEBUYKEY", "KEYS", Keys.B) + ".");
+            Log("FuelScript", "Settings: Refuel Key - " + Settings.GetValueKey("REFUELKEY", "KEYS", Keys.E) + ", Bottle Use Key - " + Settings.GetValueKey("BOTTLEUSEKEY", "KEYS", Keys.U) + ", Bottle Buy Key - " + Settings.GetValueKey("BOTTLEBUYKEY", "KEYS", Keys.B) + ", Service Key - " + Settings.GetValueKey("SERVICEKEY", "KEYS", Keys.K) + ".");
 
             // Select the input method.
             // Is he chosen to use a GamePad? If so SlimDX.dll exists?
@@ -621,7 +621,8 @@ namespace FuelScript
             try
             {
                 // Make sure player is in a vehicle and driving seat.
-                if (Player.Character.isInVehicle() && Player == CurrentVehicle.GetPedOnSeat(VehicleSeat.Driver))
+                // And make sure it's a ground vehicle!
+                if (Player.Character.isInVehicle() && Player == CurrentVehicle.GetPedOnSeat(VehicleSeat.Driver) && (CurrentVehicle.Model.isCar || CurrentVehicle.Model.isBike))
                 {
                     // Player ran out of all options?
                     if (CurrentVehicle.Metadata.Fuel == 0 && UsedFuelBottles == MaxFuelBottles)
@@ -639,14 +640,13 @@ namespace FuelScript
                             CurrentVehicle.DoorLock = DoorLock.ImpossibleToOpen;
 
                             // Fuel Service Drive To position.
-                            Vector3 DriveToPosition = CurrentVehicle.GetOffsetPosition(new Vector3(5.0f, 7.0f, 0.0f));
+                            Vector3 DriveToPosition = CurrentVehicle.GetOffsetPosition(new Vector3(5.0f, 0.0f, 0.0f));
 
                             // Hood position.
                             Vector3 HoodPosition = CurrentVehicle.GetOffsetPosition(new Vector3(0.0f, 3.0f, 0.0f));
 
-                            // Create a fuel bouser.
+                            // Create a fuel bowser.
                             ServiceVehicle = World.CreateVehicle(new Model("packer"), World.GetNextPositionOnStreet(Player.Character.Position.Around(100.0f)));
-                            ServiceVehicle.PlaceOnNextStreetProperly();
 
                             // Wait until it creates.
                             while (!ServiceVehicle.Exists())
@@ -661,6 +661,9 @@ namespace FuelScript
 
                             // Make proof to all dangers.
                             ServiceVehicle.MakeProofTo(true, true, true, true, true);
+
+                            // Place on the street properly.
+                            ServiceVehicle.PlaceOnNextStreetProperly();
 
                             // Create a mechanic ped.
                             ServicePed = ServiceVehicle.CreatePedOnSeat(VehicleSeat.Driver, new Model("m_y_mechanic_02"));
@@ -726,7 +729,7 @@ namespace FuelScript
                             }
 
                             // Drive to the scene.
-                            ServicePed.Task.DriveTo(DriveToPosition, 25.0f, false, true);
+                            ServicePed.Task.DriveTo(DriveToPosition, 15.0f, false, true);
 
                             // Show after creating required objects.
                             if (Settings.GetValueBool("EMERGENCYONWAYTEXT", "TEXTS", true))
@@ -737,7 +740,7 @@ namespace FuelScript
                             Log("PhoneNumberHandler", "Player called to the emergency fuel services.");
 
                             // Wait until he gets near with his vehicle.
-                            while (DriveToPosition.DistanceTo(ServiceVehicle.Position) > 3.0f)
+                            while (CurrentVehicle.Position.DistanceTo(ServiceVehicle.Position) > 10.0f)
                             {
                                 Wait(500);
                             }
@@ -773,11 +776,11 @@ namespace FuelScript
 
                             // Open it... really...
                             CurrentVehicle.Door(VehicleDoor.Hood).Open();
-                            Wait(1500);
+                            Wait(1200);
 
                             // Do his magic...
                             ServicePed.Task.PlayAnimation(new AnimationSet("misstaxidepot"), "workunderbonnet", 4.0f);
-                            Wait(7200);
+                            Wait(6800);
 
                             // Close the hood.
                             ServicePed.Task.PlayAnimation(new AnimationSet("amb@bridgecops"), "close_boot", 4.0f);
@@ -839,7 +842,7 @@ namespace FuelScript
                             ServicePed.Task.CruiseWithVehicle(ServiceVehicle, 35.0f, true);
 
                             // We don't need him or his vehicle?
-                            // Really? Who does want a bouser? :D
+                            // Really? Who does want a bowser? :D
                             ServicePed.NoLongerNeeded();
                             ServiceVehicle.NoLongerNeeded();
                         }
@@ -1045,7 +1048,8 @@ namespace FuelScript
                                 : "You ran out of fuel. " + (((MaxFuelBottles - UsedFuelBottles) >= 1)
                                 ? "You have " + (MaxFuelBottles - UsedFuelBottles) + " emergency fuel bottle" + (((MaxFuelBottles - UsedFuelBottles) == 1) ? "" : "s") + " left."
                                 : "No emerygency fuel bottles left.") + "\nWait until the vehicle stops and engine is idle.")
-                            : "Your vehicle ran out of fuel and you don't have any fuel bottles left. You cannot start the vehicle without fuel.\nCall GET-555-FUEL or press " + Settings.GetValueKey("SERVICEKEY", "KEYS", Keys.K) + " to call emergency fuel service which costs $" + ServiceCost + ".");
+                                : "Your vehicle ran out of fuel and you don't have any fuel bottles left." + ((CurrentVehicle.Model.isCar || CurrentVehicle.Model.isBike)
+                            ? " You cannot start the vehicle without fuel.\nCall GET-555-FUEL or press " + Settings.GetValueKey("SERVICEKEY", "KEYS", Keys.K) + " to call emergency fuel service which costs $" + ServiceCost + "." : "" ));
                     }
 
                     // Log("DrainFuel", "Player ran out of fuel on vehicle: " + CurrentVehicle.Name.ToString() + " as " + CurrentVehicle.Metadata.Fuel + " fuel units and " + CurrentVehicle.Metadata.Reserve + " reserve units.");
@@ -1402,6 +1406,12 @@ namespace FuelScript
                             LastVehicle.EngineRunning = true;
                             LastVehicle.HazardLightsOn = false;
                             Player.Character.Task.EnterVehicle(LastVehicle, VehicleSeat.Driver);
+
+                            // Wait until Niko get's back on vehicle if he's outside.
+                            while (!Player.Character.isInVehicle())
+                            {
+                                Wait(500);
+                            }
                         }
                         // If it a helicopter, boat or a bus...
                         // Inject the fuel bottle without getting off the vehicle
@@ -1451,8 +1461,8 @@ namespace FuelScript
                         UsedFuelBottles += 1;
 
                         // Hurry up, we wasted some time!
-                        Wait(600);
-                        Player.Character.SayAmbientSpeech("HURRY_UP");
+                        // Wait(600);
+                        // Player.Character.SayAmbientSpeech("HURRY_UP");
                     }
                 }
             }
