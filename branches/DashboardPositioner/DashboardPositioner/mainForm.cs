@@ -35,9 +35,9 @@ namespace DashboardPositioner
         private void pnlDashboard_LocationChanged(object sender, EventArgs e)
         {
             float x, y;
-            x = (pnlDashboard.Location.X * 100) / this.Width;
-            y = (pnlDashboard.Location.Y * 100) / this.Height;
-            this.lblDashboard.Text = String.Format("Dashboard location : x={0} y={1}", x / 100, y / 100);
+            x = (pnlDashboard.Location.X * 100.0f) / this.Width;
+            y = (pnlDashboard.Location.Y * 100.0f) / this.Height;
+            this.lblDashboard.Text = String.Format("Dashboard location : x={0} y={1}", x / 100.0f, y / 100.0f);
         }
 
         private void pnlDashboard_MouseDown(object sender, MouseEventArgs e)
@@ -65,12 +65,12 @@ namespace DashboardPositioner
         private void btnCopy_Click(object sender, EventArgs e)
         {
             float x, y;
-            x = (pnlDashboard.Location.X * 100) / this.Width;
-            y = (pnlDashboard.Location.Y * 100) / this.Height;
+            x = (pnlDashboard.Location.X * 100.0f) / this.Width;
+            y = (pnlDashboard.Location.Y * 100.0f) / this.Height;
 
-            Clipboard.SetText(String.Format("X={0}\nY={1}", x / 100, y / 100).Replace(',', '.'));
+            Clipboard.SetText(String.Format("X={0}\nY={1}", x / 100.0f, y / 100.0f).Replace(',', '.'));
 
-            MessageBox.Show(String.Format("X={0}\nY={1}", x / 100, y / 100).Replace(',', '.') + "\nCopied to clipboard. Press CTRL + V, to paste it.", "Position copied");
+            MessageBox.Show(String.Format("X={0}\nY={1}", x / 100.0f, y / 100.0f).Replace(',', '.') + "\nCopied to clipboard. Press CTRL + V, to paste it.", "Position copied");
         }
 
     }
