@@ -248,7 +248,7 @@ namespace FuelScript
                             StationBlip.Name = (Settings.GetValueString("NAME", "STATION" + i, "Fuel Station").ToUpper().Trim().Length > 30)
                                 ? Settings.GetValueString("NAME", "STATION" + i, "Fuel Station").ToUpper().Trim().Substring(0, 29)
                                 : Settings.GetValueString("NAME", "STATION" + i, "Fuel Station").ToUpper().Trim();
-                            // Display only in map...
+                            // Check if the blip should be easily visible
                             StationBlip.Display = Settings.GetValueBool("DISPLAY", "STATION" + i, true) ? BlipDisplay.MapOnly : BlipDisplay.Hidden;
                             // It's ours...
                             StationBlip.Friendly = true;
@@ -288,7 +288,7 @@ namespace FuelScript
                             StationBlip.Name = (Settings.GetValueString("NAME", "HELISTATION" + i, "Fuel Station").ToUpper().Trim().Length > 30)
                                 ? Settings.GetValueString("NAME", "HELISTATION" + i, "Fuel Station").ToUpper().Trim().Substring(0, 29)
                                 : Settings.GetValueString("NAME", "HELISTATION" + i, "Fuel Station").ToUpper().Trim();
-                            // Display only in map...
+                            // Check if the blip should be easily visible
                             StationBlip.Display = Settings.GetValueBool("DISPLAY", "HELISTATION" + i, true) ? BlipDisplay.MapOnly : BlipDisplay.Hidden;
                             // It's ours...
                             StationBlip.Friendly = true;
@@ -328,7 +328,7 @@ namespace FuelScript
                             StationBlip.Name = (Settings.GetValueString("NAME", "BOATSTATION" + i, "Fuel Station").ToUpper().Trim().Length > 30)
                                 ? Settings.GetValueString("NAME", "BOATSTATION" + i, "Fuel Station").ToUpper().Trim().Substring(0, 29)
                                 : Settings.GetValueString("NAME", "BOATSTATION" + i, "Fuel Station").ToUpper().Trim();
-                            // Display only in map...
+                            // Check if the blip should be easily visible
                             StationBlip.Display = Settings.GetValueBool("DISPLAY", "BOATSTATION" + i, true) ? BlipDisplay.MapOnly : BlipDisplay.Hidden;
                             // It's ours...
                             StationBlip.Friendly = true;
