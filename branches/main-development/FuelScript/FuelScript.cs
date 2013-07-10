@@ -618,243 +618,247 @@ namespace FuelScript
         /// </summary>
         private void PhoneNumberHandler()
         {
-            // Make sure player is in a vehicle and driving seat.
-            if (Player.Character.isInVehicle() && Player == CurrentVehicle.GetPedOnSeat(VehicleSeat.Driver))
+            try
             {
-                // Player ran out of all options?
-                if (CurrentVehicle.Metadata.Fuel == 0 && UsedFuelBottles == MaxFuelBottles)
+                // Make sure player is in a vehicle and driving seat.
+                if (Player.Character.isInVehicle() && Player == CurrentVehicle.GetPedOnSeat(VehicleSeat.Driver))
                 {
-                    // Does the player have enough money to call emergency fuel service?
-                    if (Player.Money > Convert.ToInt32(ServiceCost))
+                    // Player ran out of all options?
+                    if (CurrentVehicle.Metadata.Fuel == 0 && UsedFuelBottles == MaxFuelBottles)
                     {
-                        // Show while initializing...
-                        if (Settings.GetValueBool("EMERGENCYCALLTEXT", "TEXTS", true))
+                        // Does the player have enough money to call emergency fuel service?
+                        if (Player.Money > Convert.ToInt32(ServiceCost))
                         {
-                            Game.DisplayText("Calling Emergency Fuel Service...", 3000);
-                        }
+                            // Show while initializing...
+                            if (Settings.GetValueBool("EMERGENCYCALLTEXT", "TEXTS", true))
+                            {
+                                Game.DisplayText("Calling Emergency Fuel Service...", 3000);
+                            }
 
-                        // Lock the doors to avoid from player getting out.
-                        CurrentVehicle.DoorLock = DoorLock.ImpossibleToOpen;
+                            // Lock the doors to avoid from player getting out.
+                            CurrentVehicle.DoorLock = DoorLock.ImpossibleToOpen;
 
-                        // Fuel Service Drive To position.
-                        Vector3 DriveToPosition = CurrentVehicle.GetOffsetPosition(new Vector3(5.0f, 7.0f, 0.0f));
+                            // Fuel Service Drive To position.
+                            Vector3 DriveToPosition = CurrentVehicle.GetOffsetPosition(new Vector3(5.0f, 7.0f, 0.0f));
 
-                        // Hood position.
-                        Vector3 HoodPosition = CurrentVehicle.GetOffsetPosition(new Vector3(0.0f, 3.0f, 0.0f));
+                            // Hood position.
+                            Vector3 HoodPosition = CurrentVehicle.GetOffsetPosition(new Vector3(0.0f, 3.0f, 0.0f));
 
-                        // Create a fuel bouser.
-                        ServiceVehicle = World.CreateVehicle(new Model("packer"), World.GetNextPositionOnStreet(Player.Character.Position.Around(100.0f)));
-                        ServiceVehicle.PlaceOnNextStreetProperly();
+                            // Create a fuel bouser.
+                            ServiceVehicle = World.CreateVehicle(new Model("packer"), World.GetNextPositionOnStreet(Player.Character.Position.Around(100.0f)));
+                            ServiceVehicle.PlaceOnNextStreetProperly();
 
-                        // Wait until it creates.
-                        while (!ServiceVehicle.Exists())
-                        {
+                            // Wait until it creates.
+                            while (!ServiceVehicle.Exists())
+                            {
+                                Wait(500);
+                            }
+
+                            // Only fuel tank required, hide other extra parts.
+                            ServiceVehicle.Extras(1).Enabled = true;
+                            ServiceVehicle.Extras(3).Enabled = false;
+                            ServiceVehicle.Extras(5).Enabled = false;
+
+                            // Make proof to all dangers.
+                            ServiceVehicle.MakeProofTo(true, true, true, true, true);
+
+                            // Create a mechanic ped.
+                            ServicePed = ServiceVehicle.CreatePedOnSeat(VehicleSeat.Driver, new Model("m_y_mechanic_02"));
+
+                            // Wait until ped creates.
+                            while (!ServicePed.Exists())
+                            {
+                                Wait(500);
+                            }
+
+                            // Add a blip to the ped.
+                            Blip ServiceBlip = ServicePed.AttachBlip();
+
+                            // Use the fuel station icon.
+                            ServiceBlip.Icon = BlipIcon.Building_Garage;
+
+                            // But make it green, so it's identically different.
+                            ServiceBlip.Color = BlipColor.Green;
+
+                            // Show on map only?
+                            // ServiceBlip.Display = BlipDisplay.MapOnly;
+
+                            // Show only when the blip is near our position?
+                            ServiceBlip.ShowOnlyWhenNear = true;
+
+                            // A name to the blip which visible on the map when player mouse hover the blip.
+                            ServiceBlip.Name = "Fuel Service Agent";
+
+                            // Make him a god so he won't die in a natural disaster before he reaches us.
+                            ServicePed.Invincible = true;
+
+                            // Block his permenent events.
+                            ServicePed.BlockPermanentEvents = true;
+
+                            // Respect the player.
+                            ServicePed.ChangeRelationship(RelationshipGroup.Player, Relationship.Respect);
+
+                            // Recruite him?
+                            // ServicePed.BecomeMissionCharacter();
+
+                            // Clear all previous pending tasks.
+                            ServicePed.Task.ClearAll();
+
+                            // Keep focused to the new tasks.
+                            ServicePed.Task.AlwaysKeepTask = true;
+
+                            // Stay on new tasks until we clear them again.
+                            ServicePed.Task.Wait(-1);
+
+                            // Load all paths nodes so the ped can find paths easily.
+                            Game.LoadAllPathNodes = true;
+
+                            // If ped is not in the vehicle, get him inside it.
+                            if (!ServicePed.isInVehicle())
+                            {
+                                ServicePed.Task.EnterVehicle(ServiceVehicle, VehicleSeat.Driver);
+                            }
+
+                            // Wait and check whether the ped is in vehicle or not.
+                            while (!ServicePed.isInVehicle())
+                            {
+                                Wait(500);
+                            }
+
+                            // Drive to the scene.
+                            ServicePed.Task.DriveTo(DriveToPosition, 25.0f, false, true);
+
+                            // Show after creating required objects.
+                            if (Settings.GetValueBool("EMERGENCYONWAYTEXT", "TEXTS", true))
+                            {
+                                Game.DisplayText("An agent is on it's way to your scene...\nHold T to track him in the radar.", 8000);
+                            }
+
+                            Log("PhoneNumberHandler", "Player called to the emergency fuel services.");
+
+                            // Wait until he gets near with his vehicle.
+                            while (DriveToPosition.DistanceTo(ServiceVehicle.Position) > 3.0f)
+                            {
+                                Wait(500);
+                            }
+
+                            // That's enough, get him out of vehicle.
+                            ServicePed.Task.LeaveVehicle(ServiceVehicle, true);
+                            Wait(1500);
+
+                            // Run to the hood of the target vehicle.
+                            ServicePed.Task.RunTo(HoodPosition, false);
+
+                            // Wait until he reaches there.
+                            while (ServicePed.Position.DistanceTo(HoodPosition) > 1.45f)
+                            {
+                                Wait(500);
+                            }
+
+                            // Show when the service agent is near the player.
+                            if (Settings.GetValueBool("EMERGENCYAGENTTEXT", "TEXTS", true))
+                            {
+                                Game.DisplayText("The agent is here, he will refuel and repair your vehicle.", 8000);
+                            }
+
+                            // Turn to our vehicle's side.
+                            ServicePed.Task.TurnTo(CurrentVehicle.Position);
+                            Wait(1000);
+
+                            // Come to the right position!
+                            // ServicePed.Position = CurrentVehicle.GetOffsetPosition(new Vector3(0.0f, 2.8f, 0.0f));
+
+                            // Open the hood.
+                            ServicePed.Task.PlayAnimation(new AnimationSet("amb@bridgecops"), "open_boot", 4.0f);
+
+                            // Open it... really...
+                            CurrentVehicle.Door(VehicleDoor.Hood).Open();
+                            Wait(1500);
+
+                            // Do his magic...
+                            ServicePed.Task.PlayAnimation(new AnimationSet("misstaxidepot"), "workunderbonnet", 4.0f);
+                            Wait(7200);
+
+                            // Close the hood.
+                            ServicePed.Task.PlayAnimation(new AnimationSet("amb@bridgecops"), "close_boot", 4.0f);
                             Wait(500);
-                        }
 
-                        // Only fuel tank required, hide other extra parts.
-                        ServiceVehicle.Extras(1).Enabled = true;
-                        ServiceVehicle.Extras(3).Enabled = false;
-                        ServiceVehicle.Extras(5).Enabled = false;
+                            // Close it... really...
+                            CurrentVehicle.Door(VehicleDoor.Hood).Close();
+                            Wait(1000);
 
-                        // Make proof to all dangers.
-                        ServiceVehicle.MakeProofTo(true, true, true, true, true);
+                            // Deduct the cost.
+                            Player.Money -= Convert.ToInt32(ServiceCost);
+                            // Display the balance.
+                            GTA.Native.Function.Call("DISPLAY_CASH", true);
 
-                        // Create a mechanic ped.
-                        ServicePed = ServiceVehicle.CreatePedOnSeat(VehicleSeat.Driver, new Model("m_y_mechanic_02"));
+                            // Then give him full tank fuel!
+                            CurrentVehicle.Metadata.Fuel = CurrentVehicle.Metadata.MaxTank;
+                            // And bonus! 5 Fuel bottles!
+                            UsedFuelBottles = 0;
+                            // Not on reserve.
+                            OnReserve = false;
 
-                        // Wait until ped creates.
-                        while (!ServicePed.Exists())
-                        {
-                            Wait(500);
-                        }
+                            // Start it up.
+                            CurrentVehicle.EngineRunning = true;
+                            // Turn off hazard lights.
+                            CurrentVehicle.HazardLightsOn = false;
+                            // Repair the engine.
+                            CurrentVehicle.EngineHealth = 1000.0f;
 
-                        // Add a blip to the ped.
-                        Blip ServiceBlip = ServicePed.AttachBlip();
+                            // Let the player know.
+                            if (Settings.GetValueBool("EMERGENCYDONETEXT", "TEXTS", true))
+                            {
+                                Game.DisplayText("You got " + Convert.ToInt32(CurrentVehicle.Metadata.Fuel) + " litre(s) of fuel and " + MaxFuelBottles + " fuel bottles to your vehicle.\nBill Paid $" + ServiceCost + ". Thanks for calling emergency fuel service.", 8000);
+                            }
 
-                        // Use the fuel station icon.
-                        ServiceBlip.Icon = BlipIcon.Building_Garage;
+                            Log("PhoneNumberHandler", "Player got " + Convert.ToInt32(CurrentVehicle.Metadata.Fuel) + " litre(s) of fuel and " + MaxFuelBottles + " fuel bottles billed $" + ServiceCost + ".");
 
-                        // But make it green, so it's identically different.
-                        ServiceBlip.Color = BlipColor.Green;
+                            // Unlock the doors.
+                            CurrentVehicle.DoorLock = DoorLock.None;
 
-                        // Show on map only?
-                        // ServiceBlip.Display = BlipDisplay.MapOnly;
+                            // Block permenent events for the final tasks.
+                            ServicePed.BlockPermanentEvents = true;
 
-                        // Show only when the blip is near our position?
-                        ServiceBlip.ShowOnlyWhenNear = true;
+                            // Clear previous tasks.
+                            ServicePed.Task.ClearAll();
 
-                        // A name to the blip which visible on the map when player mouse hover the blip.
-                        ServiceBlip.Name = "Fuel Service Agent";
+                            // Focus on final tasks.
+                            ServicePed.Task.AlwaysKeepTask = true;
 
-                        // Make him a god so he won't die in a natural disaster before he reaches us.
-                        ServicePed.Invincible = true;
-
-                        // Block his permenent events.
-                        ServicePed.BlockPermanentEvents = true;
-
-                        // Respect the player.
-                        ServicePed.ChangeRelationship(RelationshipGroup.Player, Relationship.Respect);
-
-                        // Recruite him?
-                        // ServicePed.BecomeMissionCharacter();
-
-                        // Clear all previous pending tasks.
-                        ServicePed.Task.ClearAll();
-
-                        // Keep focused to the new tasks.
-                        ServicePed.Task.AlwaysKeepTask = true;
-
-                        // Stay on new tasks until we clear them again.
-                        ServicePed.Task.Wait(-1);
-
-                        // Load all paths nodes so the ped can find paths easily.
-                        Game.LoadAllPathNodes = true;
-
-                        // If ped is not in the vehicle, get him inside it.
-                        if (!ServicePed.isInVehicle())
-                        {
+                            // Get back on his vehicle.
                             ServicePed.Task.EnterVehicle(ServiceVehicle, VehicleSeat.Driver);
-                        }
 
-                        // Wait and check whether the ped is in vehicle or not.
-                        while (!ServicePed.isInVehicle())
+                            // Delete the blip.
+                            ServiceBlip.Delete();
+
+                            // Restore vehicle states.
+                            ServiceVehicle.MakeProofTo(false, false, false, false, false);
+
+                            // Run all over the city as you wish!
+                            ServicePed.Task.CruiseWithVehicle(ServiceVehicle, 35.0f, true);
+
+                            // We don't need him or his vehicle?
+                            // Really? Who does want a bouser? :D
+                            ServicePed.NoLongerNeeded();
+                            ServiceVehicle.NoLongerNeeded();
+                        }
+                        else
                         {
-                            Wait(500);
+                            // Let the player know.
+                            Game.DisplayText("You don't have enough money to request this service", 5000);
+                            Log("PhoneNumberHandler", "Player did not have enough money to request emergency fuel service.");
                         }
-
-                        // Drive to the scene.
-                        ServicePed.Task.DriveTo(DriveToPosition, 25.0f, false, true);
-
-                        // Show after creating required objects.
-                        if (Settings.GetValueBool("EMERGENCYONWAYTEXT", "TEXTS", true))
-                        {
-                            Game.DisplayText("An agent is on it's way to your scene...\nHold T to track him in the radar.", 8000);
-                        }
-
-                        Log("PhoneNumberHandler", "Player called to the emergency fuel services.");
-
-                        // Wait until he gets near with his vehicle.
-                        while (DriveToPosition.DistanceTo(ServiceVehicle.Position) > 3.0f)
-                        {
-                            Wait(500);
-                        }
-
-                        // That's enough, get him out of vehicle.
-                        ServicePed.Task.LeaveVehicle(ServiceVehicle, true);
-                        Wait(1500);
-
-                        // Run to the hood of the target vehicle.
-                        ServicePed.Task.RunTo(HoodPosition, false);
-
-                        // Wait until he reaches there.
-                        while (ServicePed.Position.DistanceTo(HoodPosition) > 1.45f)
-                        {
-                            Wait(500);
-                        }
-
-                        // Show when the service agent is near the player.
-                        if (Settings.GetValueBool("EMERGENCYAGENTTEXT", "TEXTS", true))
-                        {
-                            Game.DisplayText("The agent is here, he will refuel and repair your vehicle.", 8000);
-                        }
-
-                        // Turn to our vehicle's side.
-                        ServicePed.Task.TurnTo(CurrentVehicle.Position);
-                        Wait(1000);
-
-                        // Come to the right position!
-                        // ServicePed.Position = CurrentVehicle.GetOffsetPosition(new Vector3(0.0f, 2.8f, 0.0f));
-
-                        // Open the hood.
-                        ServicePed.Task.PlayAnimation(new AnimationSet("amb@bridgecops"), "open_boot", 4.0f);
-
-                        // Open it... really...
-                        CurrentVehicle.Door(VehicleDoor.Hood).Open();
-                        Wait(1500);
-
-                        // Do his magic...
-                        ServicePed.Task.PlayAnimation(new AnimationSet("misstaxidepot"), "workunderbonnet", 4.0f);
-                        Wait(7200);
-
-                        // Close the hood.
-                        ServicePed.Task.PlayAnimation(new AnimationSet("amb@bridgecops"), "close_boot", 4.0f);
-                        Wait(500);
-
-                        // Close it... really...
-                        CurrentVehicle.Door(VehicleDoor.Hood).Close();
-                        Wait(1000);
-
-                        // Deduct the cost.
-                        Player.Money -= Convert.ToInt32(ServiceCost);
-                        // Display the balance.
-                        GTA.Native.Function.Call("DISPLAY_CASH", true);
-
-                        // Then give him full tank fuel!
-                        CurrentVehicle.Metadata.Fuel = CurrentVehicle.Metadata.MaxTank;
-                        // And bonus! 5 Fuel bottles!
-                        UsedFuelBottles = 0;
-                        // Not on reserve.
-                        OnReserve = false;
-
-                        // Start it up.
-                        CurrentVehicle.EngineRunning = true;
-                        // Turn off hazard lights.
-                        CurrentVehicle.HazardLightsOn = false;
-                        // Repair the engine.
-                        CurrentVehicle.EngineHealth = 1000.0f;
-
-                        // Let the player know.
-                        if (Settings.GetValueBool("EMERGENCYDONETEXT", "TEXTS", true))
-                        {
-                            Game.DisplayText("You got " + Convert.ToInt32(CurrentVehicle.Metadata.Fuel) + " litre(s) of fuel and " + MaxFuelBottles + " fuel bottles to your vehicle.\nBill Paid $" + ServiceCost + ". Thanks for calling emergency fuel service.", 8000);
-                        }
-
-                        Log("PhoneNumberHandler", "Player got " + Convert.ToInt32(CurrentVehicle.Metadata.Fuel) + " litre(s) of fuel and " + MaxFuelBottles + " fuel bottles billed $" + ServiceCost + ".");
-
-                        // Unlock the doors.
-                        CurrentVehicle.DoorLock = DoorLock.None;
-
-                        // Block permenent events for the final tasks.
-                        ServicePed.BlockPermanentEvents = true;
-
-                        // Clear previous tasks.
-                        ServicePed.Task.ClearAll();
-
-                        // Focus on final tasks.
-                        ServicePed.Task.AlwaysKeepTask = true;
-
-                        // Get back on his vehicle.
-                        ServicePed.Task.EnterVehicle(ServiceVehicle, VehicleSeat.Driver);
-
-                        // Delete the blip.
-                        ServiceBlip.Delete();
-
-                        // Restore vehicle states.
-                        ServiceVehicle.MakeProofTo(false, false, false, false, false);
-
-                        // Run all over the city as you wish!
-                        ServicePed.Task.CruiseWithVehicle(ServiceVehicle, 35.0f, true);
-
-                        // We don't need him or his vehicle?
-                        // Really? Who does want a bouser? :D
-                        ServicePed.NoLongerNeeded();
-                        ServiceVehicle.NoLongerNeeded();
                     }
+                    // If player still have a way to refuel on mobile.
                     else
                     {
-                        // Let the player know.
-                        Game.DisplayText("You don't have enough money to request this service", 5000);
-                        Log("PhoneNumberHandler", "Player did not have enough money to request emergency fuel service.");
+                        // Let him know.
+                        Game.DisplayText("You don't need this service yet.", 5000);
                     }
                 }
-                // If player still have a way to refuel on mobile.
-                else
-                {
-                    // Let him know.
-                    Game.DisplayText("You don't need this service yet.", 5000);
-                }
             }
+            catch (Exception crap) { Log("ERROR: PhoneNumberHandler", crap.Message); }
         }
         /// <summary>
         /// Use ONLY when player is in vehicle!
@@ -1274,12 +1278,19 @@ namespace FuelScript
         {
             try
             {
+                // Get the executing assembly.
                 System.Reflection.Assembly a = System.Reflection.Assembly.GetExecutingAssembly();
+
+                // Open the stream requested.
                 System.IO.Stream s = a.GetManifestResourceStream(sound + ".wav");
+
+                // Load the sound player and add the stream.
                 SoundPlayer player = new SoundPlayer(s);
+
+                // Play the stream.
                 player.Play();
             }
-            catch (Exception crap) { Log("Play", crap.Message); }
+            catch (Exception crap) { Log("ERROR: Play", crap.Message); }
         }
         #endregion
 
