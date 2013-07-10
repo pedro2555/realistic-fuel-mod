@@ -1286,7 +1286,7 @@ namespace FuelScript
                 System.Reflection.Assembly a = System.Reflection.Assembly.GetExecutingAssembly();
 
                 // Open the stream requested.
-                System.IO.Stream s = a.GetManifestResourceStream(sound + ".wav");
+                System.IO.Stream s = a.GetManifestResourceStream("FuelScript.Resources." + ".wav");
 
                 // Load the sound player and add the stream.
                 SoundPlayer player = new SoundPlayer(s);
