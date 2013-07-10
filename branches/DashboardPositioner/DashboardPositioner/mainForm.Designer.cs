@@ -109,8 +109,9 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "mainForm";
+            this.Opacity = 0.95D;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Form1";
+            this.Text = "Dashboard Position for Realistic Fuel Mod";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.Load += new System.EventHandler(this.mainForm_Load);
             this.ResumeLayout(false);
