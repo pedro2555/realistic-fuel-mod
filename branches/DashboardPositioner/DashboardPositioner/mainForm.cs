@@ -29,6 +29,7 @@ namespace DashboardPositioner
         private void mainForm_Load(object sender, EventArgs e)
         {
             this.lblRes.Text = String.Format("Current resolution : {0}x{1}", this.Width, this.Height);
+            this.pnlDashboard_LocationChanged(this, e);
         }
 
         private void pnlDashboard_LocationChanged(object sender, EventArgs e)
@@ -59,6 +60,17 @@ namespace DashboardPositioner
                 newlocation.Y += e.Y - _offSet.Y;
                 this.pnlDashboard.Location = newlocation;
             }
+        }
+
+        private void btnCopy_Click(object sender, EventArgs e)
+        {
+            float x, y;
+            x = (pnlDashboard.Location.X * 100) / this.Width;
+            y = (pnlDashboard.Location.Y * 100) / this.Height;
+
+            Clipboard.SetText(String.Format("X={0}\nY={1}", x / 100, y / 100).Replace(',', '.'));
+
+            MessageBox.Show(String.Format("X={0}\nY={1}", x / 100, y / 100).Replace(',', '.') + "\nCopied to clipboard. Press CTRL + V, to paste it.", "Position copied");
         }
 
     }
