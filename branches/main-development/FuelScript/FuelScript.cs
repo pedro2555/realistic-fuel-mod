@@ -50,12 +50,14 @@ namespace FuelScript
             // Get the file version from the assembled DLL.
             Assembly assembly = Assembly.GetExecutingAssembly();
             FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(Game.InstallFolder + "\\scripts\\FuelScript.net.dll");
+
+            // Prepend "BETA" if running on debug or compiled as debug.
             string versionPrepend = "";
-#if DEBUG
-            versionPrepend = "BETA";
-#else
-            versionPrepend = "RELEASE";
-#endif
+            #if DEBUG
+            versionPrepend = " BETA";
+            #endif
+
+            // Set version with prepend if available any.
             string version = fvi.FileVersion + versionPrepend;
 
             // Script command functions...
@@ -131,8 +133,6 @@ namespace FuelScript
                 Game.DisplayText("Realistic Fuel Mod " + version + " for GTA IV has loaded\nYou got " + (MaxFuelBottles - UsedFuelBottles) + " free emergency fuel bottles.", 10000);
             }
 
-            // Log("FuelScript", "Selecting the fuel display panel mode from settings file...");
-
             // Defualt display type is: CLASSIC.
             switch (Settings.GetValueString("MODE", "DASHBOARD", "CLASSIC").ToUpper().Trim())
             {
@@ -203,9 +203,10 @@ namespace FuelScript
             FuelMeterFont.EffectColor = ColorIndex.Black;
 
             // Set the beta watermark PNG file.
-#if DEBUG
+            #if DEBUG
             BetaMark = Resources.GetTexture("beta_mark.png");
-#endif
+            #endif
+
             /// <summary>
             /// Loads all the stations.
             /// There are 3 types of stations: STATION, HELISTATION, BOATSTATION. 
@@ -988,6 +989,7 @@ namespace FuelScript
                     {
                         // Set as in reserve.
                         OnReserve = true;
+                        Play("indicator");
 
                         // Let the player know.
                         if (Settings.GetValueBool("RESERVEDFUELTEXT", "TEXTS", true))
@@ -1263,7 +1265,22 @@ namespace FuelScript
             }
             catch (Exception crap) { Log("ERROR: ReFuel", crap.Message); }
         }
-
+        /// <summary>
+        /// Play a specific sound from the embedded resources
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Play(string sound)
+        {
+            try
+            {
+                System.Reflection.Assembly a = System.Reflection.Assembly.GetExecutingAssembly();
+                System.IO.Stream s = a.GetManifestResourceStream(sound + ".wav");
+                SoundPlayer player = new SoundPlayer(s);
+                player.Play();
+            }
+            catch (Exception crap) { Log("Play", crap.Message); }
+        }
         #endregion
 
         #region Key Bindings
@@ -1809,9 +1826,9 @@ namespace FuelScript
                 }
 
                 // Draw Beta Watermark if the release is a beta release!
-#if DEBUG
+                #if DEBUG
                 e.Graphics.DrawSprite(BetaMark, 0.07f, 0.06f, 0.11f, 0.085f, 0);
-#endif
+                #endif
             }
             catch (Exception crap)
             {
