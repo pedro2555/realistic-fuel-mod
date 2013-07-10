@@ -10,8 +10,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("ScriptHook Script")]
 [assembly: AssemblyProduct("FuelScript")]
-[assembly: AssemblyCopyright("Copyright © 2013 Realistic Fuel Mod. All Rights Reserved.")]
-[assembly: AssemblyTrademark("Copyright © 2013 Realistic Fuel Mod. All Rights Reserved.")]
+[assembly: AssemblyCopyright("Public Domain Software")]
+[assembly: AssemblyTrademark("Public Domain Software")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("2.2.0.4")]
-[assembly: AssemblyFileVersion("2.2.0.4")]
+[assembly: AssemblyVersion("2.2.0.5")]
+[assembly: AssemblyFileVersion("2.2.0.5")]
