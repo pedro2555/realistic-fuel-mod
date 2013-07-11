@@ -1436,10 +1436,15 @@ namespace FuelScript
                                     Wait(100);
                                 }
 
-
                                 // Turn to the vehicle side, door side!
                                 Player.Character.Task.TurnTo(LastVehicle.Position);
                                 Wait(500);
+
+                                // Wait until Niko done turning.
+                                while (!GTA.Native.Function.Call<bool>("IS_PLAYER_FREE_FOR_AMBIENT_TASK", Player.Index))
+                                {
+                                    Wait(100);
+                                }
 
                                 // Do his magic!
                                 Game.LocalPlayer.Character.Task.PlayAnimation(new AnimationSet("misstaxidepot"), "workunderbonnet", 4.0f);
@@ -1464,7 +1469,7 @@ namespace FuelScript
                                 // Not on reserve now...
                                 OnReserve = false;
 
-                                // Wait until Niko got to the position.
+                                // Wait until Niko done animations.
                                 while (!GTA.Native.Function.Call<bool>("IS_PLAYER_FREE_FOR_AMBIENT_TASK", Player.Index))
                                 {
                                     Wait(100);
