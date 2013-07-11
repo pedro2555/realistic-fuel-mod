@@ -2,23 +2,32 @@ This script is based on the Ultimate Fuel Script v2.1.0.0 source by Pedro Rodrig
 <prodrigues1990@gmail.com> and this is just an improved version of it.
 Further development done by Sandakelum <sandakelum2009@gmail.com>.
 
-TO INSTALL: Just unzip/extract the contents of the ZIP file you downloaded to
+INSTALLATION: 
+Just unzip/extract the contents of the ZIP file you downloaded to
 GTA IV root directory folder. Keep the folders and paths intact (SlimDX.dll
 should be placed in the GTA IV root folder where GTAIV.exe exist, and everything
 else should be at "scripts" folder, as in ZIP file). You need .NET Script Hook
 v1.7.1.7 BETA and all it's dependencies, XLiveLess ASI loader (for ScriptHook) and this script is developed
 and tested on GTA IV 1.0.7.0 (recommended).
 
-WARNING: This script also shares Ultimate Fuel Script's GUID (which is
+WARNING: 
+This script also shares Ultimate Fuel Script's GUID (which is
 "3583e09d-6c44-4820-85e9-93926307d4f8"). So don't use these two script together
 or it will cause a conflict in some events.
 
+USAGE:
 You don't need to worry, every help and which keys you should use will be
 provided to you as ingame instructions when you using this script. And almost
 everything is customizable to your needs.
 
-FAQ:
+HELPFUL DOWNLOADS:
+If you need to change the display location of the fuel meter, consider downloading this tool, also part of this script : goo.gl/LGSEo.
+.NET Framework 4.5 Client Profile : goo.gl/lHb23
+.NET ScriptHook : goo.gl/pj06y
+C++ ScriptHook : goo.gl/HrQQq
+YAASIL : goo.gl/4fEkK
 
+FAQ:
 Q. GTA prompted an error : "GTA IV FATAL ERROR: Invalid resource
 detected - Please re-install the game".
 A. Just retry, the error should be gone. It sometimes happens when running the script for the first time.
