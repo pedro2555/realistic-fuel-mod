@@ -1414,7 +1414,7 @@ namespace FuelScript
                             // If Niko is driving a Helicopter or a Boat we don't want to get him out to inject a fuel bottle, do we?
                             // That would kill Niko... lol, it could be fun though :D
                             // Added a fix for the crash when injecting fuel bottles to a bus by letting Niko do it inside!
-                            if ((CurrentVehicle.Model.isCar || CurrentVehicle.Model.isBike) && CurrentVehicle.Name != "BUS")
+                            if (CurrentVehicle.Model.isCar || CurrentVehicle.Model.isBike)
                             {
                                 Player.Character.Task.LeaveVehicle(CurrentVehicle, true);
 
@@ -1429,6 +1429,13 @@ namespace FuelScript
                                 {
                                     Wait(500);
                                 }
+
+                                // Wait until Niko got to the position.
+                                while (!GTA.Native.Function.Call<bool>("IS_PLAYER_FREE_FOR_AMBIENT_TASK", Player.Index))
+                                {
+                                    Wait(100);
+                                }
+
 
                                 // Turn to the vehicle side, door side!
                                 Player.Character.Task.TurnTo(LastVehicle.Position);
@@ -1457,13 +1464,20 @@ namespace FuelScript
                                 // Not on reserve now...
                                 OnReserve = false;
 
+                                // Wait until Niko got to the position.
+                                while (!GTA.Native.Function.Call<bool>("IS_PLAYER_FREE_FOR_AMBIENT_TASK", Player.Index))
+                                {
+                                    Wait(100);
+                                }
+
                                 // Startup the engine.
                                 LastVehicle.EngineRunning = true;
                                 LastVehicle.HazardLightsOn = false;
                                 Player.Character.Task.EnterVehicle(LastVehicle, VehicleSeat.Driver);
 
                                 // Wait until Niko get's back on vehicle if he's outside.
-                                while (!Player.Character.isInVehicle())
+                                while (!Player.Character.isInVehicle() || Player.Character.CurrentVehicle.GetPedOnSeat(VehicleSeat.Driver) != Player.Character)
+
                                 {
                                     Wait(500);
                                 }
