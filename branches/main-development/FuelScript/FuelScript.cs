@@ -1074,8 +1074,16 @@ namespace FuelScript
                     // Another big dynamic text which shows when player inside of a fueling station radius.
                     if (Settings.GetValueBool("FUELINGSTATIONTEXT", "TEXTS", true))
                     {
-                        // changing this with chained if statments will be way more understandable, I haven't been able to, very confusing.
-                        Game.DisplayText("Welcome to " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " Fueling Station " + isAtFuelStation() + ". We offer fuel just for $" + Settings.GetValueFloat("PRICE", "STATION" + isAtFuelStation(), 6.99f) + " per litre.\nHold " + Settings.GetValueKey("REFUELKEY", "KEYS", Keys.E) + " button to purchase full tank fuel which costs $" + Convert.ToInt32(((CurrentVehicle.Metadata.MaxTank - CurrentVehicle.Metadata.Fuel) * Settings.GetValueFloat("PRICE", StationName + isAtFuelStation(), 6.99f))) + " at this moment." + (((MaxFuelBottles - UsedFuelBottles) < MaxFuelBottles) ? "\nPress " + Settings.GetValueKey("BOTTLEBUYKEY", "KEYS", Keys.B) + " to buy a fuel bottle for $" + FuelBottleCost + ". You can buy " + UsedFuelBottles + " more bottle" + ((UsedFuelBottles == 1) ? "" : "s") + "." : ""));
+                        // Do we about to steal fuel? Are we near a fuel steal point?
+                        if (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0 && Player.WantedLevel < Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0))
+                        {
+                            Game.DisplayText("You can steal fuel from " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " by holding " + Settings.GetValueKey("REFUELKEY", "KEYS", Keys.E) + ".\nHowever it will cause to increase your wanted level by " + Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) + " stars when finished.\nNearby people may also attack you, so be quick and smart!");
+                        }
+                        // No? Hmmm... maybe just a fueling station then. No free fuel here.
+                        else
+                        {
+                            Game.DisplayText("Welcome to " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " Fueling Station " + isAtFuelStation() + ". We offer fuel just for $" + Settings.GetValueFloat("PRICE", "STATION" + isAtFuelStation(), 6.99f) + " per litre.\nHold " + Settings.GetValueKey("REFUELKEY", "KEYS", Keys.E) + " button to purchase full tank fuel which costs $" + Convert.ToInt32(((CurrentVehicle.Metadata.MaxTank - CurrentVehicle.Metadata.Fuel) * Settings.GetValueFloat("PRICE", StationName + isAtFuelStation(), 6.99f))) + " at this moment." + (((MaxFuelBottles - UsedFuelBottles) < MaxFuelBottles) ? "\nPress " + Settings.GetValueKey("BOTTLEBUYKEY", "KEYS", Keys.B) + " to buy a fuel bottle for $" + FuelBottleCost + ". You can buy " + UsedFuelBottles + " more bottle" + ((UsedFuelBottles == 1) ? "" : "s") + "." : ""));
+                        }
                     }
 
                     // Writing too much lines at the log is really annoying everytime you cross a square foot of a station!
@@ -1182,6 +1190,35 @@ namespace FuelScript
                     // If player should get a wanted level by refueling vehicle with a goverment property.
                     Player.WantedLevel = (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0 && Player.WantedLevel < Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0)) ? Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) : Player.WantedLevel;
 
+                    // Attack nearby peds to player for stealing fuel.
+                    if (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0 && Player.WantedLevel < Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0))
+                    {
+                        // Get random amount of nearby peds around 1-3...
+                        foreach (Ped AttackingPed in World.GetPeds(CurrentVehicle.Position, 40.0f, new Random().Next(0, 4)))
+                        {
+                            // Give them plenty of ammo...
+                            AttackingPed.Weapons.MP5.Ammo = 800;
+
+                            // Draw MP5 out of jackets... Muhahhha...
+                            AttackingPed.Weapons.MP5.Select();
+
+                            // They hate me.
+                            AttackingPed.ChangeRelationship(RelationshipGroup.Player, Relationship.Hate);
+
+                            // Don't do old tasks... please...
+                            AttackingPed.Task.ClearAll();
+
+                            // New tasks first.
+                            AttackingPed.Task.AlwaysKeepTask = true;
+
+                            // SHOOT HIM!
+                            AttackingPed.Task.ShootAt(Player.Character, ShootMode.Burst);
+
+                            // We gotta set it now, no other choice... yet?
+                            AttackingPed.NoLongerNeeded();
+                        }
+                    }
+
                     // Set as not refeuling... again...
                     Refueling = false;
 
@@ -1209,7 +1246,7 @@ namespace FuelScript
                     // Let the player know if the wanted level has been increased.
                     if (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0 && Player.WantedLevel < Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0))
                     {
-                        Log("FinishRefuel", "Wanted level for vehicle: " + CurrentVehicle.Name.ToString() + " by " + Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) + " stars by using " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " Fueling Station " + isAtFuelStation() + ".");
+                        Log("FinishRefuel", "Wanted level for vehicle: " + CurrentVehicle.Name.ToString() + " by " + Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) + " stars by using " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " Stealing Point " + isAtFuelStation() + ".");
                     }
 
                     // We currently show cash, and this also not showing for much time as the catalogue takes place.
@@ -1328,11 +1365,23 @@ namespace FuelScript
                     // Let the player know.
                     if (Settings.GetValueBool("REFUELINGTEXT", "TEXTS", true))
                     {
-                        Game.DisplayText("You're vehicle is now being refueled by the fueling station.\nHold the button until it reaches to the amount you would like to purchase.", 7500);
-                    }
+                        // Are we refueling from a stealing point? To get bounty star? :D
+                        if (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0 && Player.WantedLevel < Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0))
+                        {
+                            Game.DisplayText("You're now stealing fuel from " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + ".\nHold the button until it reaches to the amount you would like to steal.", 5000);
 
-                    // Log as player using a fueling station.
-                    Log("KeyDown", "Player is now using: " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " Fueling Station " + isAtFuelStation() + ", which offers fuel for $" + Settings.GetValueFloat("PRICE", "STATION" + isAtFuelStation(), 6.99f) + " per unit.");
+                            // Log as player stealing fuel from stealing point.
+                            Log("KeyDown", "Player is now stealing fuel on: " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " Stealing Point " + isAtFuelStation() + ", and about to gain " + Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) + " star wanted level.");
+                        }
+                        // OK, it's legal. Just a legal fueling station.
+                        else
+                        {
+                            Game.DisplayText("You're vehicle is now being refueled by the fueling station.\nHold the button until it reaches to the amount you would like to purchase.", 7500);
+
+                            // Log as player using a fueling station.
+                            Log("KeyDown", "Player is now using: " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " Fueling Station " + isAtFuelStation() + ", which offers fuel for $" + Settings.GetValueFloat("PRICE", "STATION" + isAtFuelStation(), 6.99f) + " per unit.");
+                        }
+                    }
                 }
             }
             // If player presses BOTTLEUSEKEY, default U
