@@ -88,7 +88,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="GTAIV.ico" />
+    <None Include="GTAIV.ico" />
     <Content Include="License.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -106,12 +106,12 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="FuelScript.ini">
+    <Content Include="FuelScript.ini">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="FuelScript.log">
+    </Content>
+    <Content Include="FuelScript.log">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
