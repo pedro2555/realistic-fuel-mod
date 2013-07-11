@@ -1482,7 +1482,6 @@ namespace FuelScript
 
                                 // Wait until Niko get's back on vehicle if he's outside.
                                 while (!Player.Character.isInVehicle() || Player.Character.CurrentVehicle.GetPedOnSeat(VehicleSeat.Driver) != Player.Character)
-
                                 {
                                     Wait(500);
                                 }
@@ -1851,20 +1850,6 @@ namespace FuelScript
                     {
                         // Calculate fuel availablity...
                         float FuelAvailability = (CurrentVehicle.Metadata.Fuel * 100) / CurrentVehicle.Metadata.MaxTank;
-
-                        // NOTE: This is to know how much fuel is remaining, in litres. As we have fuel bottles indicator in place, this has been commented out.
-                        /*
-                        e.Graphics.DrawText(
-                            Convert.ToInt32((float)CurrentVehicle.Metadata.Fuel).ToString() + " l",
-                            Dashboard.X - 0.035f,
-                            Dashboard.Y - 0.012f,
-                            (CurrentVehicle.Metadata.Fuel <= CurrentVehicle.Metadata.Reserve)
-                                ? ((Flashing < 5)
-                                    ? GTA.ColorIndex.SmokeSilverPoly
-                                    : (GTA.ColorIndex)35)
-                                : GTA.ColorIndex.SmokeSilverPoly,
-                                FuelMeterFont);
-                        */
 
                         // Draw the fuel bottles status (such as "2/5").
                         e.Graphics.DrawText(
