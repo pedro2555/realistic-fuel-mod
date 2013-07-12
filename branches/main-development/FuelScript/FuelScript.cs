@@ -1539,7 +1539,8 @@ namespace FuelScript
                 try
                 {
                     // If player haven't exceeded max fuel bottles limit and player is in vehicle at a fueling station.
-                    if ((MaxFuelBottles - UsedFuelBottles) < MaxFuelBottles && Player.Character.isInVehicle() && isAtFuelStation() > -1)
+                    // And make sure it isn't a fuel stealing point, because if so, player shouldn't allowed to steal fuel bottles. Just normal fuel only...
+                    if ((MaxFuelBottles - UsedFuelBottles) < MaxFuelBottles && Player.Character.isInVehicle() && isAtFuelStation() > -1 && Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) < 0)
                     {
                         // Does the player have enough money to buy a fuel bottle?
                         if (Player.Money >= Convert.ToInt32(FuelBottleCost))
