@@ -1076,7 +1076,7 @@ namespace FuelScript
                         // Do we about to steal fuel? Are we near a fuel steal point?
                         if (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0)
                         {
-                            Game.DisplayText("You can steal fuel from " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " by holding " + Settings.GetValueKey("REFUELKEY", "KEYS", Keys.E) + ".\nHowever it will cause to increase your wanted level by " + Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) + " stars when finished.\nNearby people may also attack you, so be quick and smart!");
+                            Game.DisplayText("You can steal fuel from " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " by holding " + Settings.GetValueKey("REFUELKEY", "KEYS", Keys.E) + " until the gauge fills.\nHowever it will cause to increase your wanted level by " + Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) + " stars when finished." + ((CurrentVehicle.Model.isCar || CurrentVehicle.Model.isBike) ? "\nNearby people may also attack you, so be quick and smart!" : ""));
                         }
                         // No? Hmmm... maybe just a fueling station then. No free fuel here.
                         else
@@ -1200,10 +1200,25 @@ namespace FuelScript
                             AttackingPed.Weapons.MP5.Ammo = 800;
 
                             // Draw MP5 out of jackets... Muhahhha...
-                            AttackingPed.Weapons.MP5.Select();
+                            // AttackingPed.Weapons.MP5.Select();
 
                             // They hate me.
                             AttackingPed.ChangeRelationship(RelationshipGroup.Player, Relationship.Hate);
+
+                            // Make him natorious.
+                            AttackingPed.RelationshipGroup = RelationshipGroup.Criminal;
+
+                            // Kill enemies first!
+                            AttackingPed.PriorityTargetForEnemies = true;
+
+                            // Can he climb, just over high obsctacles and still find path to the player?
+                            AttackingPed.SetPathfinding(true, true, true);
+
+                            // Allow him for his choice.
+                            AttackingPed.CanSwitchWeapons = true;
+
+                            // Don't follow the player and attack.
+                            AttackingPed.WillUseCarsInCombat = false;
 
                             // Don't do old tasks... please...
                             AttackingPed.Task.ClearAll();
@@ -1212,7 +1227,7 @@ namespace FuelScript
                             AttackingPed.Task.AlwaysKeepTask = true;
 
                             // SHOOT HIM!
-                            AttackingPed.Task.ShootAt(Player.Character, ShootMode.Burst);
+                            AttackingPed.Task.ShootAt(Player.Character, ShootMode.Burst, new Random().Next(10000, 20000));
 
                             // We gotta set it now, no other choice... yet?
                             AttackingPed.NoLongerNeeded();
