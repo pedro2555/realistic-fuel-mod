@@ -1191,7 +1191,8 @@ namespace FuelScript
                     Player.WantedLevel = (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0 && Player.WantedLevel < Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0)) ? Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) : Player.WantedLevel;
 
                     // Attack nearby peds to player for stealing fuel.
-                    if (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0 && Player.WantedLevel < Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0))
+                    // Only affect for ground vehicles. It's not like people will crawl buildings to attack helicopters nor swith through ocean to attack boats? :D
+                    if (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0 && Player.WantedLevel < Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) && (CurrentVehicle.Model.isCar || CurrentVehicle.Model.isBike))
                     {
                         // Get random amount of nearby peds around 1-3...
                         foreach (Ped AttackingPed in World.GetPeds(CurrentVehicle.Position, 40.0f, new Random().Next(0, 4)))
