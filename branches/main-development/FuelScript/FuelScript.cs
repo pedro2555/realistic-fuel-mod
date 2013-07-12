@@ -1925,7 +1925,8 @@ namespace FuelScript
 
                         // Controls the Flashinging when on reserved fuel.
                         // Strange, but it won't flash if we used Flashing++;
-                        Flashing = (Flashing == 20) ? 0 : Flashing + 1;
+                        // It's not strange it is expected behaviour: Flashing++ uses the variable Flashing and updates it with 1. ++Flashing updates the variable with 1 and then uses it.
+                        Flashing = (Flashing == 20) ? 0 : ++Flashing;
                     }
                     catch { }
                 }
