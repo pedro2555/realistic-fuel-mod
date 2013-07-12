@@ -69,7 +69,7 @@
       <HintPath>.\ScriptHookDotNet.dll</HintPath>
     </Reference>
     <Reference Include="SlimDX">
-      <HintPath>..\..\..\References\SlimDX\SlimDX.dll</HintPath>
+      <HintPath>.\SlimDX.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
