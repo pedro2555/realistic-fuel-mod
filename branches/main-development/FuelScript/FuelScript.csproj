@@ -95,7 +95,6 @@
     <Content Include="Readme.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <EmbeddedResource Include="Resources\indicator.wav" />
     <EmbeddedResource Include="Resources\beta_mark.png" />
   </ItemGroup>
   <ItemGroup>

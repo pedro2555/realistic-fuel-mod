@@ -996,7 +996,6 @@ namespace FuelScript
                     {
                         // Set as in reserve.
                         OnReserve = true;
-                        Play("indicator");
 
                         // Let the player know.
                         if (Settings.GetValueBool("RESERVEDFUELTEXT", "TEXTS", true))
@@ -1075,7 +1074,7 @@ namespace FuelScript
                     if (Settings.GetValueBool("FUELINGSTATIONTEXT", "TEXTS", true))
                     {
                         // Do we about to steal fuel? Are we near a fuel steal point?
-                        if (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0 && Player.WantedLevel < Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0))
+                        if (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0)
                         {
                             Game.DisplayText("You can steal fuel from " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " by holding " + Settings.GetValueKey("REFUELKEY", "KEYS", Keys.E) + ".\nHowever it will cause to increase your wanted level by " + Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) + " stars when finished.\nNearby people may also attack you, so be quick and smart!");
                         }
@@ -1192,7 +1191,7 @@ namespace FuelScript
 
                     // Attack nearby peds to player for stealing fuel.
                     // Only affect for ground vehicles. It's not like people will crawl buildings to attack helicopters nor swim through ocean to attack boats? :D
-                    if (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0 && Player.WantedLevel < Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) && (CurrentVehicle.Model.isCar || CurrentVehicle.Model.isBike))
+                    if (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0 && (CurrentVehicle.Model.isCar || CurrentVehicle.Model.isBike))
                     {
                         // Get random amount of nearby peds around 1-3...
                         foreach (Ped AttackingPed in World.GetPeds(CurrentVehicle.Position, 40.0f, new Random().Next(0, 4)))
@@ -1311,29 +1310,6 @@ namespace FuelScript
             }
             catch (Exception crap) { Log("ERROR: ReFuel", crap.Message); }
         }
-        /// <summary>
-        /// Play a specific sound from the embedded resources
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Play(string sound)
-        {
-            try
-            {
-                // Get the executing assembly.
-                System.Reflection.Assembly a = System.Reflection.Assembly.GetExecutingAssembly();
-
-                // Open the stream requested.
-                System.IO.Stream s = a.GetManifestResourceStream("FuelScript.Resources." + ".wav");
-
-                // Load the sound player and add the stream.
-                SoundPlayer player = new SoundPlayer(s);
-
-                // Play the stream.
-                player.Play();
-            }
-            catch (Exception crap) { Log("ERROR: Play", crap.Message); }
-        }
         #endregion
 
         #region Key Bindings
@@ -1369,7 +1345,7 @@ namespace FuelScript
                         if (Settings.GetValueBool("REFUELINGTEXT", "TEXTS", true))
                         {
                             // Are we refueling from a stealing point? To get bounty star? :D
-                            if (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0 && Player.WantedLevel < Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0))
+                            if (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0)
                             {
                                 Game.DisplayText("You're now stealing fuel from " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + ".\nHold the button until it reaches to the amount you would like to steal.", 5000);
 
