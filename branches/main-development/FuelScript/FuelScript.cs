@@ -996,6 +996,7 @@ namespace FuelScript
                     {
                         // Set as in reserve.
                         OnReserve = true;
+                        Play("resSound");
 
                         // Let the player know.
                         if (Settings.GetValueBool("RESERVEDFUELTEXT", "TEXTS", true))
@@ -1324,6 +1325,29 @@ namespace FuelScript
                 }
             }
             catch (Exception crap) { Log("ERROR: ReFuel", crap.Message); }
+        }
+        /// <summary>
+        /// Play a specific sound from the embedded resources
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Play(string sound)
+        {
+            try
+            {
+                // Get the executing assembly.
+                System.Reflection.Assembly a = System.Reflection.Assembly.GetExecutingAssembly();
+                
+                // Open the stream requested.
+                System.IO.Stream s = a.GetManifestResourceStream("FuelScript.Resources."+ sound + ".wav");
+
+                // Load the sound player and add the stream.
+                SoundPlayer player = new SoundPlayer(s);
+
+                // Play the stream.
+                player.Play();
+            }
+            catch (Exception crap) { Log("ERROR: Play", crap.Message); }
         }
         #endregion
 
