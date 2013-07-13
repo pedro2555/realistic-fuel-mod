@@ -34,6 +34,8 @@ using System.Media;
 using System.Windows.Forms;
 using System.Diagnostics;
 using System.Reflection;
+using System.Net;
+using System.Text.RegularExpressions;
 
 // Namespace
 namespace FuelScript
@@ -1366,6 +1368,44 @@ namespace FuelScript
                 player.Play();
             }
             catch (Exception crap) { Log("ERROR: Play", crap.Message); }
+        }
+        /// <summary>
+        /// Gets the latest file version from the project repository at Google Code
+        /// </summary>
+        /// <returns></returns>
+        public string GetLatestVersion()
+        {
+            try
+            {
+                // Retreive version file from the repository
+                return new WebClient().DownloadString(@"http:\\realistic-fuel-mod.googlecode.com/svn/trunk/FuelScript/FuelScript/Resources/version");
+            }
+            catch (Exception)
+            {
+                // Most likelly internet is down, more important we can't figure out any version
+                return "server offline";
+            }
+        }
+        /// <summary>
+        /// Compares the latest release version with current running version.
+        /// Returns true if the server is unavailable or if the current running version is higher or equal to the latest version
+        /// </summary>
+        /// <param name="CurrentFileVersion">variable version</param>
+        /// <returns></returns>
+        public bool isUpdated(string CurrentFileVersion)
+        {
+            // If this is a develpment verson, no reason to continue
+            if (CurrentFileVersion.Contains("BETA"))
+                return true;
+            // Parse the version string
+            CurrentFileVersion = CurrentFileVersion.Replace(".", "").Replace(" BETA", "").Trim();
+            // Get latest version
+            string LatestFileVersion = GetLatestVersion();
+            // Server is offline, we will check another time
+            if (LatestFileVersion == "server offline")
+                return true;
+            // Wow, everything cool compare the versions.
+            return (Convert.ToInt32(CurrentFileVersion) > Convert.ToInt32(LatestFileVersion));
         }
         #endregion
 
