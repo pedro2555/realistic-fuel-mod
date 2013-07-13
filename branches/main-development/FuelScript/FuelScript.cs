@@ -1194,44 +1194,62 @@ namespace FuelScript
                     // Only affect for ground vehicles. It's not like people will crawl buildings to attack helicopters nor swim through ocean to attack boats? :D
                     if (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0 && (CurrentVehicle.Model.isCar || CurrentVehicle.Model.isBike))
                     {
-                        // Get random amount of nearby peds around 1-3...
-                        foreach (Ped AttackingPed in World.GetPeds(CurrentVehicle.Position, 40.0f, new Random().Next(0, 4)))
+                        // Get random amount of nearby peds around 2-5...
+                        foreach (Ped AttackingPed in World.GetPeds(CurrentVehicle.Position, 40.0f, new Random().Next(2, 5)))
                         {
-                            // Give them plenty of ammo...
-                            AttackingPed.Weapons.MP5.Ammo = 800;
+                            // Don't get our player in array too!
+                            if (AttackingPed != Player.Character)
+                            {
+                                // Become our mission character.
+                                AttackingPed.BecomeMissionCharacter();
+                                AttackingPed.BlockGestures = true;
+                                AttackingPed.BlockPermanentEvents = true;
 
-                            // Draw MP5 out of jackets... Muhahhha...
-                            // AttackingPed.Weapons.MP5.Select();
+                                // Woah? Really? In our turf?
+                                AttackingPed.SayAmbientSpeech("SURPRISED");
 
-                            // They hate me.
-                            AttackingPed.ChangeRelationship(RelationshipGroup.Player, Relationship.Hate);
+                                // Give them plenty of ammo...
+                                AttackingPed.Weapons.MP5.Ammo = 800;
 
-                            // Make him natorious.
-                            AttackingPed.RelationshipGroup = RelationshipGroup.Criminal;
+                                // Draw MP5 out of jackets... Muhahhha...
+                                AttackingPed.Weapons.Select(Weapon.SMG_MP5);
 
-                            // Kill enemies first!
-                            AttackingPed.PriorityTargetForEnemies = true;
+                                // They hate me.
+                                AttackingPed.ChangeRelationship(RelationshipGroup.Player, Relationship.Hate);
 
-                            // Can he climb, just over high obsctacles and still find path to the player?
-                            AttackingPed.SetPathfinding(true, true, true);
+                                // Make him natorious.
+                                AttackingPed.RelationshipGroup = RelationshipGroup.Criminal;
+                                AttackingPed.CantBeDamagedByRelationshipGroup(RelationshipGroup.Criminal, false);
 
-                            // Allow him for his choice.
-                            AttackingPed.CanSwitchWeapons = true;
+                                // Kill enemies first!
+                                AttackingPed.PriorityTargetForEnemies = true;
 
-                            // Don't follow the player and attack.
-                            AttackingPed.WillUseCarsInCombat = false;
+                                // Can he climb, just over high obsctacles and still find path to the player?
+                                AttackingPed.SetPathfinding(true, true, true);
 
-                            // Don't do old tasks... please...
-                            AttackingPed.Task.ClearAll();
+                                // Don't allow him for his choice.
+                                // AttackingPed.CanSwitchWeapons = false;
+                                AttackingPed.BlockWeaponSwitching = true;
 
-                            // New tasks first.
-                            AttackingPed.Task.AlwaysKeepTask = true;
+                                // Don't follow the player and attack.
+                                AttackingPed.WillUseCarsInCombat = false;
 
-                            // SHOOT HIM!
-                            AttackingPed.Task.ShootAt(Player.Character, ShootMode.Burst, new Random().Next(10000, 20000));
+                                // Don't let police bust them, because it's their property.
+                                AttackingPed.WantedByPolice = false;
 
-                            // We gotta set it now, no other choice... yet?
-                            AttackingPed.NoLongerNeeded();
+                                // Don't do old tasks... please...
+                                AttackingPed.Task.ClearAll();
+
+                                // New tasks first.
+                                AttackingPed.Task.AlwaysKeepTask = true;
+
+                                // SHOOT HIM!
+                                AttackingPed.Task.ShootAt(Player, ShootMode.Continuous);
+                                // AttackingPed.Task.FightAgainst(Player);
+
+                                // We gotta set it now, no other choice... yet?
+                                AttackingPed.NoLongerNeeded();
+                            }
                         }
                     }
 
@@ -1386,7 +1404,7 @@ namespace FuelScript
                             // Are we refueling from a stealing point? To get bounty star? :D
                             if (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0)
                             {
-                                Game.DisplayText("You're now stealing fuel from " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + ".\nHold the button until it reaches to the amount you would like to steal.", 5000);
+                                Game.DisplayText("You're now stealing fuel from " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + ".\nHold the button until it reaches to the amount you would like to steal.", 7500);
 
                                 // Log as player stealing fuel from stealing point.
                                 Log("KeyDown", "Player is now stealing fuel on: " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " Stealing Point " + isAtFuelStation() + ", and about to gain " + Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) + " star wanted level.");
@@ -1481,7 +1499,7 @@ namespace FuelScript
                                 }
 
                                 // Give a little fuel capacity...
-                                LastVehicle.Metadata.Fuel = LastVehicle.Metadata.Reserve + (LastVehicle.Metadata.MaxTank / 10);
+                                LastVehicle.Metadata.Fuel = LastVehicle.Metadata.MaxTank / 2;
                                 // Not on reserve now...
                                 OnReserve = false;
 
