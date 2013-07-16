@@ -62,6 +62,7 @@ namespace FuelScript
             // Set version with prepend if available any.
             string version = fvi.FileVersion + versionPrepend;
 
+            #region External Script Communication Function Binders
             // Script command functions...
             GUID = new Guid("3583e09d-6c44-4820-85e9-93926307d4f8");
 
@@ -89,6 +90,7 @@ namespace FuelScript
             {
                 ExtScriptGUID = Guid.Empty;
             }
+            #endregion
 
             // Hook the ticking function.
             this.Interval = 1000;
@@ -450,7 +452,7 @@ namespace FuelScript
         { get { return (Player.Character.isInVehicle()) ? Player.Character.CurrentVehicle : null; } }
         #endregion
 
-        #region Methods and Functions
+        #region External Script Communication Functions
         /// <summary>
         /// Send current vehicle's fuel value, use command 'GetCurrentFuel'
         /// </summary>
@@ -575,6 +577,8 @@ namespace FuelScript
             }
             catch (Exception crap) { Log("ERROR: SetVehicleFuelPercentage", crap.Message); }
         }
+        #endregion
+        #region Methods and Functions
         /// <summary>
         /// Saves an exception's message with the current date and time, and the method that originated it.
         /// </summary>
@@ -742,22 +746,27 @@ namespace FuelScript
                             Log("PhoneNumberHandler", "Player called to the emergency fuel services.");
 
                             // Wait until he gets near with his vehicle.
-                            while (CurrentVehicle.Position.DistanceTo(ServiceVehicle.Position) > 10.0f)
+                            while (!GTA.Native.Function.Call<bool>("IS_PLAYER_FREE_FOR_AMBIENT_TASK", ServicePed))
                             {
-                                Wait(500);
+                                Wait(100);
                             }
 
                             // That's enough, get him out of vehicle.
                             ServicePed.Task.LeaveVehicle(ServiceVehicle, true);
-                            Wait(1500);
+
+                            // Wait until he done exiting the vehicle.
+                            while (!GTA.Native.Function.Call<bool>("IS_PLAYER_FREE_FOR_AMBIENT_TASK", ServicePed))
+                            {
+                                Wait(100);
+                            }
 
                             // Run to the hood of the target vehicle.
                             ServicePed.Task.RunTo(HoodPosition, false);
 
                             // Wait until he reaches there.
-                            while (ServicePed.Position.DistanceTo(HoodPosition) > 1.45f)
+                            while (!GTA.Native.Function.Call<bool>("IS_PLAYER_FREE_FOR_AMBIENT_TASK", ServicePed))
                             {
-                                Wait(500);
+                                Wait(100);
                             }
 
                             // Show when the service agent is near the player.
@@ -768,10 +777,12 @@ namespace FuelScript
 
                             // Turn to our vehicle's side.
                             ServicePed.Task.TurnTo(CurrentVehicle.Position);
-                            Wait(1000);
 
-                            // Come to the right position!
-                            // ServicePed.Position = CurrentVehicle.GetOffsetPosition(new Vector3(0.0f, 2.8f, 0.0f));
+                            // Wait until he done turning.
+                            while (!GTA.Native.Function.Call<bool>("IS_PLAYER_FREE_FOR_AMBIENT_TASK", ServicePed))
+                            {
+                                Wait(100);
+                            }
 
                             // Open the hood.
                             ServicePed.Task.PlayAnimation(new AnimationSet("amb@bridgecops"), "open_boot", 4.0f);
@@ -782,7 +793,12 @@ namespace FuelScript
 
                             // Do his magic...
                             ServicePed.Task.PlayAnimation(new AnimationSet("misstaxidepot"), "workunderbonnet", 4.0f);
-                            Wait(6800);
+
+                            // Wait until Niko done repairing the vehicle.
+                            while (!GTA.Native.Function.Call<bool>("IS_PLAYER_FREE_FOR_AMBIENT_TASK", ServicePed))
+                            {
+                                Wait(100);
+                            }
 
                             // Close the hood.
                             ServicePed.Task.PlayAnimation(new AnimationSet("amb@bridgecops"), "close_boot", 4.0f);
@@ -830,6 +846,12 @@ namespace FuelScript
 
                             // Focus on final tasks.
                             ServicePed.Task.AlwaysKeepTask = true;
+
+                            // Wait until Niko done doing previous tasks given by script.
+                            while (!GTA.Native.Function.Call<bool>("IS_PLAYER_FREE_FOR_AMBIENT_TASK", ServicePed))
+                            {
+                                Wait(100);
+                            }
 
                             // Get back on his vehicle.
                             ServicePed.Task.EnterVehicle(ServiceVehicle, VehicleSeat.Driver);
@@ -1369,6 +1391,7 @@ namespace FuelScript
             }
             catch (Exception crap) { Log("ERROR: Play", crap.Message); }
         }
+        #region Script Update Checking & Comparing
         /// <summary>
         /// Gets the latest file version from the project repository at Google Code
         /// </summary>
@@ -1407,6 +1430,7 @@ namespace FuelScript
             // Wow, everything cool compare the versions.
             return (Convert.ToInt32(CurrentFileVersion) > Convert.ToInt32(LatestFileVersion));
         }
+        #endregion
         #endregion
 
         #region Key Bindings
@@ -1775,6 +1799,8 @@ namespace FuelScript
                 Log("ERROR: Tick", crap.Message);
             }
         }
+        #endregion
+        #region Pre Frame Drawing Functions
         /// <summary>
         /// run every frame, devMode
         /// </summary>
