@@ -64,6 +64,9 @@
     <ApplicationIcon>GTAIV.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AdvancedHook">
+      <HintPath>.\AdvancedHook.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="ScriptHookDotNet">
       <HintPath>.\ScriptHookDotNet.dll</HintPath>

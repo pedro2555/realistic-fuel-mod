@@ -36,6 +36,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Net;
 using System.Text.RegularExpressions;
+using AdvancedHookManaged;
 
 // Namespace
 namespace FuelScript
@@ -952,7 +953,9 @@ namespace FuelScript
                 if (CurrentVehicle.Metadata.Fuel > 0.0f)
                 {
                     // Keep hazard lights turned off.
-                    CurrentVehicle.HazardLightsOn = false;
+                    // Causing issue with IVIndicator mod.
+                    //CurrentVehicle.HazardLightsOn = false;
+
                     // Draining enabled for cars and bikes?
                     if ((CurrentVehicle.Model.isCar || CurrentVehicle.Model.isBike) && CurrentVehicle.EngineRunning && Settings.GetValueBool("CARS", "MISC", true))
                     {
@@ -1047,9 +1050,17 @@ namespace FuelScript
                     CurrentVehicle.EngineRunning = false;
 
                     // Turn hazard lights on to assist the traffic!
+                    // Fix for compatibility issue with Indicator Mod
+                    AVehicle Veh = TypeConverter.ConvertToAVehicle(CurrentVehicle);
+                    // just making sure all blinkers are active
+                    MethodInfo method = Veh.GetType().GetMethod("IndicatorLight");
+                    (method.Invoke(Veh, new object[] { 0 }) as AIndicatorLight).On = true;
+                    (method.Invoke(Veh, new object[] { 1 }) as AIndicatorLight).On = true;
+                    (method.Invoke(Veh, new object[] { 2 }) as AIndicatorLight).On = true;
+                    (method.Invoke(Veh, new object[] { 3 }) as AIndicatorLight).On = true;
                     CurrentVehicle.HazardLightsOn = true;
 
-                    // Set fuel level as zero for double sure.
+                    // Set fuel level as zero for double sure. And to avoid the gauge bar be drawn backwards, ending up with a green line outside the gauge boundaries.
                     CurrentVehicle.Metadata.Fuel = 0;
 
                     // Smoking a little maybe? (only if he isn't damaged too much)
@@ -1284,7 +1295,7 @@ namespace FuelScript
                     CurrentVehicle.EngineRunning = true;
                     CurrentVehicle.NeedsToBeHotwired = false;
 
-                    // CurrentVehicle.HazardLightsOn = false;
+                    CurrentVehicle.HazardLightsOn = false;
 
                     // Turn on lights if required.
                     GTA.Native.Function.Call("SET_VEH_LIGHTS", CurrentVehicle, 2);
