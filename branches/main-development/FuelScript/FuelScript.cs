@@ -50,6 +50,9 @@ namespace FuelScript
         /// </summary>
         public FuelScript()
         {
+            // set message flags
+            welcomeMessageDisplayed = false;
+
             // Get the file version from the assembled DLL.
             Assembly assembly = Assembly.GetExecutingAssembly();
             FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(Game.InstallFolder + "\\scripts\\FuelScript.net.dll");
@@ -362,6 +365,10 @@ namespace FuelScript
         }
 
         #region Variables and Properties
+        /// <summary>
+        /// True while player is at a fuel station and the message 'Welcome to ' or 'You can steal fuel from ' has beeing displayed
+        /// </summary>
+        private bool welcomeMessageDisplayed;
         /// <summary>
         /// Where to send data
         /// </summary>
@@ -1106,23 +1113,49 @@ namespace FuelScript
                     // Show currently owned cash so the player can decide whether to purchase fuel or not, or unit by unit.
                     GTA.Native.Function.Call("DISPLAY_CASH", true);
 
-                    // Another big dynamic text which shows when player inside of a fueling station radius.
+                    // Another big dynamic text which shows when player is inside of a fueling station radius.
                     if (Settings.GetValueBool("FUELINGSTATIONTEXT", "TEXTS", true))
                     {
-                        // Do we about to steal fuel? Are we near a fuel steal point?
-                        if (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0)
+                        if (!welcomeMessageDisplayed)
                         {
-                            Game.DisplayText("You can steal fuel from " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " by holding " + Settings.GetValueKey("REFUELKEY", "KEYS", Keys.E) + " until the gauge fills.\nHowever it will cause to increase your wanted level by " + Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) + " stars when finished." + ((CurrentVehicle.Model.isCar || CurrentVehicle.Model.isBike) ? "\nNearby people may also attack you, so be quick and smart!" : ""));
-                        }
-                        // No? Hmmm... maybe just a fueling station then. No free fuel here.
-                        else
-                        {
-                            Game.DisplayText("Welcome to " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " Fueling Station " + isAtFuelStation() + ". We offer fuel just for $" + Settings.GetValueFloat("PRICE", "STATION" + isAtFuelStation(), 6.99f) + " per litre.\nHold " + Settings.GetValueKey("REFUELKEY", "KEYS", Keys.E) + " button to purchase full tank fuel which costs $" + Convert.ToInt32(((CurrentVehicle.Metadata.MaxTank - CurrentVehicle.Metadata.Fuel) * Settings.GetValueFloat("PRICE", StationName + isAtFuelStation(), 6.99f))) + " at this moment." + (((MaxFuelBottles - UsedFuelBottles) < MaxFuelBottles) ? "\nPress " + Settings.GetValueKey("BOTTLEBUYKEY", "KEYS", Keys.B) + " to buy a fuel bottle for $" + FuelBottleCost + ". You can buy " + UsedFuelBottles + " more bottle" + ((UsedFuelBottles == 1) ? "" : "s") + "." : ""));
+                            // Do we about to steal fuel? Are we near a fuel steal point?
+                            if (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0)
+                            {
+                                AGame.PrintTextForever(String.Format("You can steal fuel from ~y~{0}~w~ by holding {1}. Watch out for the ~b~cops~w~, you get ~r~{2} stars~w~ by refueling here, also other people may attack you, be smart and quick!",
+                                    Settings.GetValueString("NAME", StationName + isAtFuelStation(), "this refuel spot"),
+                                    Settings.GetValueKey("REFUELKEY", "KEYS", Keys.E),
+                                    Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0)));
+                            }
+                            // No? Hmmm... maybe just a fueling station then. No free fuel here.
+                            else
+                            {
+                                string welcomeText = String.Format("Welcome to ~y~{0}~w~ Fuel Station. We offer fuel for ${1} a litre. Hold [{2}] button to refuel, a full tank will cost you ${3}. ",
+                                    Settings.GetValueString("NAME", StationName + isAtFuelStation(), "This"),
+                                    Settings.GetValueFloat("PRICE", "STATION" + isAtFuelStation(), 6.99f),
+                                    Settings.GetValueKey("REFUELKEY", "KEYS", Keys.E),
+                                    Convert.ToInt32(((CurrentVehicle.Metadata.MaxTank - CurrentVehicle.Metadata.Fuel) * Settings.GetValueFloat("PRICE", StationName + isAtFuelStation(), 6.99f))));
+                                if (MaxFuelBottles - UsedFuelBottles < MaxFuelBottles)
+                                {
+                                    welcomeText += String.Format("Press [{0}] to buy a fuel bottle for ${1}, you can buy {2} more bottle{3}",
+                                    Settings.GetValueKey("BOTTLEBUYKEY", "KEYS", Keys.B),
+                                    FuelBottleCost,
+                                    UsedFuelBottles,
+                                    UsedFuelBottles == 1 ? "." : "s.");
+                                }
+                                AGame.PrintTextForever(welcomeText);
+                            }
+                            welcomeMessageDisplayed = true;
                         }
                     }
 
                     // Writing too much lines at the log is really annoying everytime you cross a square foot of a station!
                     // Log("DrainFuel", "Player entered to: " + Settings.GetValueString("NAME", station + isAtFuelStation(), "Unknown") + " Fueling Station " + isAtFuelStation() + " zone with vehicle: " + CurrentVehicle.Name.ToString() + ".");
+                }
+                else
+                {
+                    // clear message displayed flag
+                    welcomeMessageDisplayed = false;
+                    GTA.Native.Function.Call("CLEAR_HELP");
                 }
 
                 #endregion
