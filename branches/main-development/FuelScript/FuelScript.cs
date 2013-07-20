@@ -109,7 +109,7 @@ namespace FuelScript
             Log("FuelScript", "Based on Ultimate Fuel Script v2.1 (https://code.google.com/p/ultimate-fuel-script).");
             Log("FuelScript", "Realistic Fuel Mod " + version + " found dsound.dll " + ((File.Exists(Game.InstallFolder + "\\dsound.dll")) ? "present" : "not present") + ", xlive.dll " + ((File.Exists(Game.InstallFolder + "\\xlive.dll")) ? "present" : "not present") + " and SlimDX.dll " + ((File.Exists(Game.InstallFolder + "\\SlimDX.dll")) ? "present." : "not present."));
 
-            Log("FuelScript", "Loading settings file: FuelScripts.ini...");
+            Log("FuelScript", "Loading settings file: FuelScript.ini...");
 
             // Load the settings file.
             SettingsFile.Open("FuelScript.ini");
@@ -138,7 +138,10 @@ namespace FuelScript
             // Show the script status.
             if (Settings.GetValueBool("STARTUPTEXT", "TEXTS", true))
             {
-                Game.DisplayText("Realistic Fuel Mod " + version + " for GTA IV has loaded\nYou got " + (MaxFuelBottles - UsedFuelBottles) + " free emergency fuel bottles.", 10000);
+
+                AGame.PrintText(String.Format("Realistic Fuel Mod {0} loaded correctly.", version));
+
+                ShowMessage(String.Format("You have {0} free emergency fuel bottles.", MaxFuelBottles - UsedFuelBottles), 10000);
             }
 
             // Defualt display type is: CLASSIC.
@@ -647,7 +650,7 @@ namespace FuelScript
                             // Show while initializing...
                             if (Settings.GetValueBool("EMERGENCYCALLTEXT", "TEXTS", true))
                             {
-                                Game.DisplayText("Calling Emergency Fuel Service...", 3000);
+                                AGame.PrintText("Calling Emergency Fuel Service...");
                             }
 
                             // Lock the doors to avoid from player getting out.
@@ -748,7 +751,7 @@ namespace FuelScript
                             // Show after creating required objects.
                             if (Settings.GetValueBool("EMERGENCYONWAYTEXT", "TEXTS", true))
                             {
-                                Game.DisplayText("An agent is on it's way to your scene...\nHold T to track him in the radar.", 8000);
+                                AGame.PrintTextForever("An agent is on it's way to your scene...\nHold T to track him in the radar.");
                             }
 
                             Log("PhoneNumberHandler", "Player called to the emergency fuel services.");
@@ -780,7 +783,7 @@ namespace FuelScript
                             // Show when the service agent is near the player.
                             if (Settings.GetValueBool("EMERGENCYAGENTTEXT", "TEXTS", true))
                             {
-                                Game.DisplayText("The agent is here, he will refuel and repair your vehicle.", 8000);
+                                AGame.PrintText("The agent is here, he will refuel and repair your vehicle.");
                             }
 
                             // Turn to our vehicle's side.
@@ -838,7 +841,7 @@ namespace FuelScript
                             // Let the player know.
                             if (Settings.GetValueBool("EMERGENCYDONETEXT", "TEXTS", true))
                             {
-                                Game.DisplayText("You got " + Convert.ToInt32(CurrentVehicle.Metadata.Fuel) + " litre(s) of fuel and " + MaxFuelBottles + " fuel bottles to your vehicle.\nBill Paid $" + ServiceCost + ". Thanks for calling emergency fuel service.", 8000);
+                                AGame.PrintText(String.Format("Paid ${0}. Thanks for calling the emergency fuel service.", ServiceCost));
                             }
 
                             Log("PhoneNumberHandler", "Player got " + Convert.ToInt32(CurrentVehicle.Metadata.Fuel) + " litre(s) of fuel and " + MaxFuelBottles + " fuel bottles billed $" + ServiceCost + ".");
@@ -881,7 +884,7 @@ namespace FuelScript
                         else
                         {
                             // Let the player know.
-                            Game.DisplayText("You don't have enough money to request this service", 5000);
+                            AGame.PrintText("You don't have enough money to request this service");
                             Log("PhoneNumberHandler", "Player did not have enough money to request emergency fuel service.");
                         }
                     }
@@ -889,7 +892,7 @@ namespace FuelScript
                     else
                     {
                         // Let him know.
-                        Game.DisplayText("You don't need this service yet.", 5000);
+                        AGame.PrintText("You don't need this service yet.");
                     }
                 }
             }
@@ -1035,9 +1038,12 @@ namespace FuelScript
                         // Let the player know.
                         if (Settings.GetValueBool("RESERVEDFUELTEXT", "TEXTS", true))
                         {
-                            Game.DisplayText("Your vehicle is now running on reserved fuel.\n" + (((MaxFuelBottles - UsedFuelBottles) >= 1)
-                                ? "You have " + (MaxFuelBottles - UsedFuelBottles) + " emergency fuel bottle" + (((MaxFuelBottles - UsedFuelBottles) == 1) ? "" : "s") + " left."
-                                : "Drive to a refueling station quickly!"), 10000);
+                            string reserveText = "Vehicle is running low on fuel!";
+                            if (MaxFuelBottles - UsedFuelBottles >= 1)
+                                reserveText += String.Format(" You have {0} emergency fuel bottle{1} left.", MaxFuelBottles - UsedFuelBottles, MaxFuelBottles - UsedFuelBottles == 1 ? "" : "s");
+                            else
+                                reserveText += " Drive to a refueling station quickly!";
+                            AGame.PrintTextForever(reserveText);
                         }
 
                         // Log the situation.
@@ -1121,7 +1127,7 @@ namespace FuelScript
                             // Do we about to steal fuel? Are we near a fuel steal point?
                             if (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0)
                             {
-                                AGame.PrintTextForever(String.Format("You can steal fuel from ~y~{0}~w~ by holding {1}. Watch out for the ~b~cops~w~, you get ~r~{2} stars~w~ by refueling here, also other people may attack you, be smart and quick!",
+                                AGame.PrintTextForever(String.Format("You can steal fuel from the ~y~{0}~w~ by holding down [{1}]. Watch out for the ~b~cops~w~, you will get ~r~{2} stars~w~ by refueling here, also other people may attack you, be smart and quick!",
                                     Settings.GetValueString("NAME", StationName + isAtFuelStation(), "this refuel spot"),
                                     Settings.GetValueKey("REFUELKEY", "KEYS", Keys.E),
                                     Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0)));
@@ -1129,7 +1135,7 @@ namespace FuelScript
                             // No? Hmmm... maybe just a fueling station then. No free fuel here.
                             else
                             {
-                                string welcomeText = String.Format("Welcome to ~y~{0}~w~ Fuel Station. We offer fuel for ${1} a litre. Hold [{2}] button to refuel, a full tank will cost you ${3}. ",
+                                string welcomeText = String.Format("Welcome to ~y~{0}~w~ Fuel Station. We offer fuel for ${1} a litre. Hold down the [{2}] button to refuel, a full tank will cost you ${3}. ",
                                     Settings.GetValueString("NAME", StationName + isAtFuelStation(), "This"),
                                     Settings.GetValueFloat("PRICE", "STATION" + isAtFuelStation(), 6.99f),
                                     Settings.GetValueKey("REFUELKEY", "KEYS", Keys.E),
@@ -1392,7 +1398,7 @@ namespace FuelScript
                         // Inform the player about what happened.
                         if (Settings.GetValueBool("OUTOFFUNDSFUELTEXT", "TEXTS", true))
                         {
-                            Game.DisplayText("Sorry, but you don't have enough money to refuel your vehicle.\nFuel unit costs $" + Settings.GetValueFloat("PRICE", "STATION" + isAtFuelStation(), 6.99f) + " here", 5000);
+                            AGame.PrintText(String.Format("Sorry, but you don't have enough money to refuel your vehicle. Fuel costs ${0} per liter.", Settings.GetValueFloat("PRICE", "STATION" + isAtFuelStation(), 6.99f)));
                         }
 
                         // Log it.
@@ -1512,15 +1518,15 @@ namespace FuelScript
                             // Are we refueling from a stealing point? To get bounty star? :D
                             if (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0)
                             {
-                                Game.DisplayText("You're now stealing fuel from " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + ".\nHold the button until it reaches to the amount you would like to steal.", 7500);
-
+                                AGame.PrintText(String.Format("You're now stealing fuel from the ~y~{0}~w~. Hold the button until it reaches to the amount you would like to steal.", Settings.GetValueString("NAME", StationName + isAtFuelStation(), "this location")));
+                                
                                 // Log as player stealing fuel from stealing point.
                                 Log("KeyDown", "Player is now stealing fuel on: " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " Stealing Point " + isAtFuelStation() + ", and about to gain " + Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) + " star wanted level.");
                             }
                             // OK, it's legal. Just a legal fueling station.
                             else
                             {
-                                Game.DisplayText("You're vehicle is now being refueled by the fueling station.\nHold the button until it reaches to the amount you would like to purchase.", 7500);
+                                AGame.PrintText("You're vehicle is now being refueled by the fueling station. Hold the button until it reaches to the amount you would like to purchase.");
 
                                 // Log as player using a fueling station.
                                 Log("KeyDown", "Player is now using: " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " Fueling Station " + isAtFuelStation() + ", which offers fuel for $" + Settings.GetValueFloat("PRICE", "STATION" + isAtFuelStation(), 6.99f) + " per unit.");
@@ -1563,7 +1569,7 @@ namespace FuelScript
                                 // Let him know that Niko doing a magic!
                                 if (Settings.GetValueBool("BOTTLEUSINGTEXT", "TEXTS", true))
                                 {
-                                    Game.DisplayText("You're now using one of your emergency fuel bottles on this vehicle.", 10000);
+                                    ShowMessage("You're now using one of your emergency fuel bottles on this vehicle.", 10000);
                                 }
 
                                 // Wait until Niko got to the position.
@@ -1636,7 +1642,7 @@ namespace FuelScript
                                 // Let him know that Niko doing a magic!
                                 if (Settings.GetValueBool("BOTTLEUSINGTEXT", "TEXTS", true))
                                 {
-                                    Game.DisplayText("You used one of your fuel bottles on this vehicle.", 5000);
+                                    ShowMessage("You used one of your fuel bottles on this vehicle.", 5000);
                                 }
 
                                 // Repair the vehicle.
@@ -1706,7 +1712,7 @@ namespace FuelScript
                             // Let the player know.
                             if (Settings.GetValueBool("BOTTLEPURCHASETEXT", "TEXTS", true))
                             {
-                                Game.DisplayText("You purchased one more fuel bottle for $" + FuelBottleCost + ".\nNow you have " + (MaxFuelBottles - UsedFuelBottles) + " fuel bottles.", 5000);
+                                ShowMessage(String.Format("You purchased one more fuel bottle for ${0}. You now have {1} fuel bottle{2}", FuelBottleCost, MaxFuelBottles - UsedFuelBottles, MaxFuelBottles - UsedFuelBottles == 1 ? "": "s"), 5000);
                             }
 
                             Log("KeyDown", "Player purchased one more emergency fuel bottle on vehicle: " + CurrentVehicle.Name.ToString() + " and now have " + (MaxFuelBottles - UsedFuelBottles) + " out of " + MaxFuelBottles + " bottles.");
@@ -1717,7 +1723,7 @@ namespace FuelScript
                             // Let the player know.
                             if (Settings.GetValueBool("OUTOFFUNDSBOTTLETEXT", "TEXTS", true))
                             {
-                                Game.DisplayText("Sorry, you don't have enough money to buy a fuel bottle.", 5000);
+                                AGame.PrintText("Sorry, you don't have enough money to buy a fuel bottle.");
                             }
                         }
                     }
@@ -1794,6 +1800,8 @@ namespace FuelScript
                 {
                     // If so... yeah... no last vehicle.
                     LastVehicle = null;
+                    // Clear any vehicle exclusive messages
+                    welcomeMessageDisplayed = false;
                 }
 
                 // Track player vehicles details...
@@ -1812,7 +1820,7 @@ namespace FuelScript
                             // Specially, if the mission is based on time, he can't go refuel it, can he?
                             if (Settings.GetValueBool("MISSIONREQUIREDTEXT", "TEXTS", true))
                             {
-                                Game.DisplayText("Your vehicle is required for a mission, fuel is not draining!", 8000);
+                                ShowMessage("Your vehicle is required for a mission, fuel is not draining!", 8000);
                             }
 
                             Log("DrainFuel", "Fuel is not draining on vehicle: " + CurrentVehicle.Name.ToString() + " as it's required for a mission.");
@@ -1826,9 +1834,11 @@ namespace FuelScript
                                 float FuelAvailability = (Convert.ToInt32(CurrentVehicle.Metadata.Fuel) * 100) / Convert.ToInt32(CurrentVehicle.Metadata.MaxTank);
 
                                 // When player gets into a vehicle, so it's status.
-                                Game.DisplayText("This vehicle currently holds " + String.Format("{0:00}%", FuelAvailability) + " fuel left in it's " + Convert.ToInt32(CurrentVehicle.Metadata.MaxTank) + " litre(s) tank.\n" + (((MaxFuelBottles - UsedFuelBottles) >= 1)
-                                    ? "You have " + (MaxFuelBottles - UsedFuelBottles) + " emergency fuel bottle" + (((MaxFuelBottles - UsedFuelBottles) == 1) ? "" : "s") + " left."
-                                    : "You have no emergency fuel bottles left."), 10000);
+                                AGame.PrintTextForever(String.Format("Vehicle currently holds {0:00}% fuel left in it's {1} liter{2} tank.", CurrentVehicle.Metadata.Fuel * 100 / CurrentVehicle.Metadata.MaxTank, CurrentVehicle.Metadata.MaxTank, CurrentVehicle.Metadata.MaxTank == 1 ? "" : "s"));
+                                if (MaxFuelBottles - UsedFuelBottles < 1)
+                                     ShowMessage("No emergency fuel bottles left.", 5000);
+                                else
+                                    ShowMessage(String.Format(" You have {0} emergency fuel bottle{1} left.", MaxFuelBottles - UsedFuelBottles, MaxFuelBottles - UsedFuelBottles == 1 ? "" : "s"), 5000);
                             }
 
                             // Mark it as not damaged by low fuel running.
