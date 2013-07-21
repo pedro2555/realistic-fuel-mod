@@ -23,8 +23,8 @@ everything is customizable to your needs.
 HELPFUL DOWNLOADS:
 If you need to change the display location of the fuel meter, consider downloading this tool, also part of this script : goo.gl/LGSEo.
 .NET Framework 4.5 Client Profile : goo.gl/lHb23
-.NET ScriptHook : goo.gl/pj06y
-C++ ScriptHook : goo.gl/HrQQq
+.NET ScriptHook 1.7.1.7 : goo.gl/pj06y
+C++ ScriptHook 0.5.1 : goo.gl/HrQQq
 YAASIL : goo.gl/4fEkK
 
 CHANGE LOG: 
@@ -63,15 +63,14 @@ FIX: Dozen more minor bugs has been fixed.
 NOTE: Fully commented newly added features and functions on the source code.
 
 FAQ:
-Q. GTA prompted an error : "GTA IV FATAL ERROR: Invalid resource
-detected - Please re-install the game".
+Q. GTA prompted an error : "GTA IV FATAL ERROR: Invalid resource detected - Please re-install the game".
 A. Just retry, the error should be gone. It sometimes happens when running the script for the first time.
 
 Q. Can I add entries in the settings (.ini) file for added, not replaced cars ?
 A. Yes, use a trainer (Simple Native Trainer is recommended) and take note of the HASH code for that specific car. Open the settings file copy and paste any car/bike/boat/heli entry, and change the name of vehicle (inside []) to the hash code of your car. The values specified in this new entry should be loaded for your added cars, there is no limit to how many entries you can have.
 
 Q. Can you add stealing points for fuel ?
-Q. The LCPD helicopter landing pad in the center island, is a fuel stealing location for helicopters. Alternatively you can define your own locations by adding a new entry to the settings file, up to 254 entries for each station type.
+Q. They are in the mod already, they just don't show up on the map/radar. If you think a new location should be added, leave a comment at gta4-mods.com.
 
 Q. You didn't anwser my question.
 A. If you've encountered a problem not described here, please fill a new issue report at this link https://code.google.com/p/realistic-fuel-mod/issues/entry?template=Defect%20report%20from%20user. If you have a comment about this mod or you just want to suggest something, write a comment at GTA4-mods.com.
