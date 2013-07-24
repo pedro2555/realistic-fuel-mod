@@ -927,8 +927,6 @@ namespace FuelScript
                 // If Niko have fuel in the vehicle.
                 if (CurrentVehicle.Metadata.Fuel > 0.0f)
                 {
-                    // Keep hazard lights turned off.
-                    CurrentVehicle.HazardLightsOn = false;
                     // Draining enabled for cars and bikes?
                     if ((CurrentVehicle.Model.isCar || CurrentVehicle.Model.isBike) && CurrentVehicle.EngineRunning && Settings.GetValueBool("CARS", "MISC", true))
                     {
@@ -1189,7 +1187,7 @@ namespace FuelScript
                     CurrentVehicle.EngineRunning = true;
                     CurrentVehicle.NeedsToBeHotwired = false;
 
-                    // CurrentVehicle.HazardLightsOn = false;
+                    CurrentVehicle.HazardLightsOn = false;
 
                     // Turn on lights if required.
                     GTA.Native.Function.Call("SET_VEH_LIGHTS", CurrentVehicle, 2);
