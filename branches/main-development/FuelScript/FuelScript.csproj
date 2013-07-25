@@ -123,7 +123,7 @@
 SubWCRev "$(SolutionDir)\" "$(ProjectDir)versiondata\AssemblyInfo.tmpl" "$(ProjectDir)Properties\AssemblyInfo.cs"</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(SolutionDir)\FuelScript\bin\Debug\FuelScript.net.dll" "D:\Program Files\Rockstar Games\Grand Theft Auto IV\scripts\FuelScript.net.dll" /Y</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(SolutionDir)\FuelScript\bin\Debug\FuelScript.net.dll" "C:\Program Files (x86)\Rockstar Games\Grand Theft Auto IV\scripts\FuelScript.net.dll" /Y</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

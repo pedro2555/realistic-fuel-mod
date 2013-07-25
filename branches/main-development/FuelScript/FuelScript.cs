@@ -50,20 +50,18 @@ namespace FuelScript
         /// </summary>
         public FuelScript()
         {
-#if DEBUG
+            #if DEBUG
             BindConsoleCommand("setFuel", (GTA.ParameterCollection args) =>
+            {
+                try
                 {
-                    try
-                    {
-                        CurrentVehicle.Metadata.Fuel = args.ToFloat(0);
-                    }
-                    catch (Exception crap)
-                    {
-                        
-                    }
-                });
-#endif
-            // set message flags
+                    CurrentVehicle.Metadata.Fuel = args.ToFloat(0);
+                }
+                catch (Exception crap) {}
+            });
+            #endif
+
+            // Set message flags
             ranOutMessageDisplayed = false;
             welcomeMessageDisplayed = false;
 
@@ -607,6 +605,7 @@ namespace FuelScript
             catch (Exception crap) { Log("ERROR: SetVehicleFuelPercentage", crap.Message); }
         }
         #endregion
+
         #region Methods and Functions
         /// <summary>
         /// Saves an exception's message with the current date and time, and the method that originated it.
@@ -1286,7 +1285,7 @@ namespace FuelScript
                         // Get random amount of nearby peds around 2-5...
                         foreach (Ped AttackingPed in World.GetPeds(CurrentVehicle.Position, 40.0f, new Random().Next(2, 5)))
                         {
-                            // Don't get our player in array too!
+                            // Exclude player in array!
                             if (AttackingPed != Player.Character)
                             {
                                 // Become our mission character.
@@ -1870,6 +1869,7 @@ namespace FuelScript
             }
         }
         #endregion
+
         #region Pre Frame Drawing Functions
         /// <summary>
         /// run every frame, devMode
