@@ -378,14 +378,6 @@ namespace FuelScript
 
         #region Variables and Properties
         /// <summary>
-        /// True while fuel level is 0 and message was displayed.
-        /// </summary>
-        private bool ranOutMessageDisplayed;
-        /// <summary>
-        /// True while player is at a fuel station and the message 'Welcome to ' or 'You can steal fuel from ' has beeing displayed
-        /// </summary>
-        private bool welcomeMessageDisplayed;
-        /// <summary>
         /// Where to send data
         /// </summary>
         Guid ExtScriptGUID;
