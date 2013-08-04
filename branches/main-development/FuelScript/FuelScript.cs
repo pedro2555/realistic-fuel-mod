@@ -61,10 +61,6 @@ namespace FuelScript
             });
             #endif
 
-            // Set message flags
-            ranOutMessageDisplayed = false;
-            welcomeMessageDisplayed = false;
-
             // Get the file version from the assembled DLL.
             Assembly assembly = Assembly.GetExecutingAssembly();
             FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(Game.InstallFolder + "\\scripts\\FuelScript.net.dll");
