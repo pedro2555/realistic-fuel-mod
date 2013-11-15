@@ -230,7 +230,7 @@ namespace FuelScript
             /// The first identifier is 1, the last is 255.
             /// The identifiers must be consecutive (1, 2, 3, 4. NOT 1, 3, 5)
             /// </summary>
-            #region Load Dueling Stations
+            #region Load Fueling Stations
             try
             {
                 // Log as placing blips...
@@ -964,8 +964,6 @@ namespace FuelScript
                 // If Niko have fuel in the vehicle.
                 if (CurrentVehicle.Metadata.Fuel > 0.0f)
                 {
-                    // keep reseting help message
-                    ranOutMessageDisplayed = false;
                     // Keep hazard lights turned off.
                     // Causing issue with IVIndicator mod.
                     //CurrentVehicle.HazardLightsOn = false;
@@ -1083,7 +1081,7 @@ namespace FuelScript
 
                     // I don't know how to explain this line, hahhha... Let's say it's a big dynamic text?
                     // This is shown when the vehicle ran out of fuel.
-                    if (Settings.GetValueBool("OUTOFFUELTEXT", "TEXTS", true) && !ranOutMessageDisplayed)
+                    if (Settings.GetValueBool("OUTOFFUELTEXT", "TEXTS", true))
                     {
                         // Shows when ran out of fuel. EDIT: I've trie to changed this to chained if's but for now it stays like that
                         Game.DisplayText(
@@ -1123,18 +1121,15 @@ namespace FuelScript
                     // Another big dynamic text which shows when player is inside of a fueling station radius.
                     if (Settings.GetValueBool("FUELINGSTATIONTEXT", "TEXTS", true))
                     {
-                        if (!welcomeMessageDisplayed)
+                        // Do we about to steal fuel? Are we near a fuel steal point?
+                        if (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0)
                         {
-                            // Do we about to steal fuel? Are we near a fuel steal point?
-                            if (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0)
-                            {
-                                Game.DisplayText("You can steal fuel from " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " by holding " + Settings.GetValueKey("REFUELKEY", "KEYS", Keys.E) + " until the gauge fills.\nHowever it will cause to increase your wanted level by " + Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) + " stars when finished." + ((CurrentVehicle.Model.isCar || CurrentVehicle.Model.isBike) ? "\nNearby people may also attack you, so be quick and smart!" : ""));
-                            }
-                            // No? Hmmm... maybe just a fueling station then. No free fuel here.
-                            else
-                            {
-                                Game.DisplayText("Welcome to " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " Fueling Station " + isAtFuelStation() + ". We offer fuel just for $" + Settings.GetValueFloat("PRICE", "STATION" + isAtFuelStation(), 6.99f) + " per litre.\nHold " + Settings.GetValueKey("REFUELKEY", "KEYS", Keys.E) + " button to purchase full tank fuel which costs $" + Convert.ToInt32(((CurrentVehicle.Metadata.MaxTank - CurrentVehicle.Metadata.Fuel) * Settings.GetValueFloat("PRICE", StationName + isAtFuelStation(), 6.99f))) + " at this moment." + (((MaxFuelBottles - UsedFuelBottles) < MaxFuelBottles) ? "\nPress " + Settings.GetValueKey("BOTTLEBUYKEY", "KEYS", Keys.B) + " to buy a fuel bottle for $" + FuelBottleCost + ". You can buy " + UsedFuelBottles + " more bottle" + ((UsedFuelBottles == 1) ? "" : "s") + "." : ""));
-                            }
+                            Game.DisplayText("You can steal fuel from " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " by holding " + Settings.GetValueKey("REFUELKEY", "KEYS", Keys.E) + " until the gauge fills.\nHowever it will cause to increase your wanted level by " + Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) + " stars when finished." + ((CurrentVehicle.Model.isCar || CurrentVehicle.Model.isBike) ? "\nNearby people may also attack you, so be quick and smart!" : ""));
+                        }
+                        // No? Hmmm... maybe just a fueling station then. No free fuel here.
+                        else
+                        {
+                            Game.DisplayText("Welcome to " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " Fueling Station " + isAtFuelStation() + ". We offer fuel just for $" + Settings.GetValueFloat("PRICE", "STATION" + isAtFuelStation(), 6.99f) + " per litre.\nHold " + Settings.GetValueKey("REFUELKEY", "KEYS", Keys.E) + " button to purchase full tank fuel which costs $" + Convert.ToInt32(((CurrentVehicle.Metadata.MaxTank - CurrentVehicle.Metadata.Fuel) * Settings.GetValueFloat("PRICE", StationName + isAtFuelStation(), 6.99f))) + " at this moment." + (((MaxFuelBottles - UsedFuelBottles) < MaxFuelBottles) ? "\nPress " + Settings.GetValueKey("BOTTLEBUYKEY", "KEYS", Keys.B) + " to buy a fuel bottle for $" + FuelBottleCost + ". You can buy " + UsedFuelBottles + " more bottle" + ((UsedFuelBottles == 1) ? "" : "s") + "." : ""));
                         }
                     }
 
@@ -1778,8 +1773,6 @@ namespace FuelScript
                 {
                     // If so... yeah... no last vehicle.
                     LastVehicle = null;
-                    // Clear any vehicle exclusive messages
-                    welcomeMessageDisplayed = false;
                 }
 
                 // Track player vehicles details...
