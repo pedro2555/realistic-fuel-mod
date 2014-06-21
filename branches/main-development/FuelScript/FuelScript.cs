@@ -114,7 +114,7 @@ namespace FuelScript
             // Then log the rest of bla blas...
             Log("FuelScript", "Realistic Fuel Mod " + version + " for GTA IV loaded under GTA IV " + Game.Version.ToString() + " successfully.");
             Log("FuelScript", "Realistic Fuel Mod is an open-source software on public domain license (https://code.google.com/p/realistic-fuel-mod).");
-            Log("FuelScript", "Based on Ultimate Fuel Script v2.1 (https://code.google.com/p/ultimate-fuel-script).");
+            // Log("FuelScript", "Based on Ultimate Fuel Script v2.1 (https://code.google.com/p/ultimate-fuel-script).");
             Log("FuelScript", "Realistic Fuel Mod " + version + " found dsound.dll " + ((File.Exists(Game.InstallFolder + "\\dsound.dll")) ? "present" : "not present") + ", xlive.dll " + ((File.Exists(Game.InstallFolder + "\\xlive.dll")) ? "present" : "not present") + " and SlimDX.dll " + ((File.Exists(Game.InstallFolder + "\\SlimDX.dll")) ? "present." : "not present."));
 
             Log("FuelScript", "Loading settings file: FuelScript.ini...");
@@ -149,27 +149,8 @@ namespace FuelScript
                 Game.DisplayText("Realistic Fuel Mod " + version + " for GTA IV has loaded\nYou got " + (MaxFuelBottles - UsedFuelBottles) + " free emergency fuel bottles.", 10000);
             }
 
-            // Defualt display type is: CLASSIC.
-            switch (Settings.GetValueString("MODE", "DASHBOARD", "CLASSIC").ToUpper().Trim())
-            {
-                // Developer mode display panel.
-                case "DEV":
-                    this.PerFrameDrawing += new GraphicsEventHandler(FuelScript_PerFrameDrawing_devMode);
-                    // Bind Q to reload settings file.
-                    this.BindKey(Keys.Q, Settings.Load);
-                    break;
-
-                // Digital mode display panel (with digits).
-                case "DIGITAL":
-                    this.PerFrameDrawing += new GraphicsEventHandler(FuelScript_PerFrameDrawing_digitalMode);
-                    break;
-
-                // Classical mode display panel (with meters and several digits).
-                // Recommended mode for the public releases.
-                case "CLASSIC":
-                    this.PerFrameDrawing += new GraphicsEventHandler(FuelScript_PerFrameDrawing_classicMode);
-                    break;
-            }
+            // Attach Graphics Event Handler to draw onscreen graphics and elements
+            this.PerFrameDrawing += new GraphicsEventHandler(FuelScript_PerFrameDrawing);
 
             // Log which display panel mode was chosen by the player.
             Log("FuelScript", "Fuel display panel has been selected as: " + Settings.GetValueString("MODE", "DASHBOARD", "CLASSIC").ToUpper().Trim() + " display mode.");
@@ -1294,7 +1275,13 @@ namespace FuelScript
                                 AttackingPed.Task.ShootAt(Player, ShootMode.Continuous);
                                 // AttackingPed.Task.FightAgainst(Player);
 
-                                // We gotta set it now, no other choice... yet?
+                                // Wait until attacking peds stop shooting at player
+                                while (AttackingPed.isShooting)
+                                {
+                                    Wait(200);
+                                }
+
+                                // Then, forget about those peds
                                 AttackingPed.NoLongerNeeded();
                             }
                         }
@@ -1542,7 +1529,7 @@ namespace FuelScript
                                 // Let him know that Niko doing a magic!
                                 if (Settings.GetValueBool("BOTTLEUSINGTEXT", "TEXTS", true))
                                 {
-                                    ShowMessage("You're now using one of your emergency fuel bottles on this vehicle.", 10000);
+                                    Game.DisplayText("You're now using one of your emergency fuel bottles on this vehicle.", 10000);
                                 }
 
                                 // Wait until Niko got to the position.
@@ -1615,7 +1602,7 @@ namespace FuelScript
                                 // Let him know that Niko doing a magic!
                                 if (Settings.GetValueBool("BOTTLEUSINGTEXT", "TEXTS", true))
                                 {
-                                    ShowMessage("You used one of your fuel bottles on this vehicle.", 5000);
+                                    Game.DisplayText("You used one of your fuel bottles on this vehicle.", 5000);
                                 }
 
                                 // Repair the vehicle.
@@ -1685,7 +1672,7 @@ namespace FuelScript
                             // Let the player know.
                             if (Settings.GetValueBool("BOTTLEPURCHASETEXT", "TEXTS", true))
                             {
-                                ShowMessage(String.Format("You purchased one more fuel bottle for ${0}. You now have {1} fuel bottle{2}", FuelBottleCost, MaxFuelBottles - UsedFuelBottles, MaxFuelBottles - UsedFuelBottles == 1 ? "": "s"), 5000);
+                                Game.DisplayText(String.Format("You purchased one more fuel bottle for ${0}. You now have {1} fuel bottle{2}", FuelBottleCost, MaxFuelBottles - UsedFuelBottles, MaxFuelBottles - UsedFuelBottles == 1 ? "": "s"), 5000);
                             }
 
                             Log("KeyDown", "Player purchased one more emergency fuel bottle on vehicle: " + CurrentVehicle.Name.ToString() + " and now have " + (MaxFuelBottles - UsedFuelBottles) + " out of " + MaxFuelBottles + " bottles.");
@@ -1791,7 +1778,7 @@ namespace FuelScript
                             // Specially, if the mission is based on time, he can't go refuel it, can he?
                             if (Settings.GetValueBool("MISSIONREQUIREDTEXT", "TEXTS", true))
                             {
-                                ShowMessage("Your vehicle is required for a mission, fuel is not draining!", 8000);
+                                Game.DisplayText("Your vehicle is required for a mission, fuel is not draining!", 8000);
                             }
 
                             Log("DrainFuel", "Fuel is not draining on vehicle: " + CurrentVehicle.Name.ToString() + " as it's required for a mission.");
@@ -1826,134 +1813,11 @@ namespace FuelScript
 
         #region Pre Frame Drawing Functions
         /// <summary>
-        /// run every frame, devMode
+        /// Run on every frame drawing graphics and elements
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void FuelScript_PerFrameDrawing_devMode(object sender, GTA.GraphicsEventArgs e)
-        {
-            try
-            {
-                // Take care of lights and engine when refueling...
-                if (Refueling)
-                {
-                    Player.Character.Task.ClearSecondary();
-                    GTA.Native.Function.Call("FORCE_CAR_LIGHTS", CurrentVehicle, 0);
-                    CurrentVehicle.EngineRunning = false;
-                    // CurrentVehicle.HazardLightsOn = true;
-                }
-
-                // Set the scaling type.
-                e.Graphics.Scaling = FontScaling.ScreenUnits;
-
-                // Get the dashboard location.
-                PointF Dashboard = new PointF(Settings.GetValueFloat("X", "DASHBOARD", 0.0f), Settings.GetValueFloat("Y", "DASHBOARD", 0.0f));
-
-                // Is player in vehicle?
-                if (Player.Character.isInVehicle())
-                {
-                    // Try to get the fuel level and draw it.
-                    try { e.Graphics.DrawText("FUEL".PadRight(15) + CurrentVehicle.Metadata.Fuel, Dashboard.X, Dashboard.Y + 0.02f); }
-                    catch { }
-
-                    // Draw vehicle speed.
-                    e.Graphics.DrawText("SPEED".PadRight(15) + "\t" + CurrentVehicle.Speed * 3.6f, Dashboard.X, Dashboard.Y + 0.04f);
-
-                    // Draw vehicle engine health (0-1000 float).
-                    e.Graphics.DrawText("ENGINE".PadRight(15) + "\t" + CurrentVehicle.EngineHealth, Dashboard.X, Dashboard.Y + 0.06f);
-
-                    // Draw vehicle RPM (how hard the player push the engine).
-                    e.Graphics.DrawText("RPM".PadRight(15) + "\t" + CurrentVehicle.CurrentRPM, Dashboard.X, Dashboard.Y + 0.08f);
-
-                    // Draw vehicle hash code.
-                    e.Graphics.DrawText("HASH".PadRight(15) + "\t" + CurrentVehicle.Model.Hash, Dashboard.X, Dashboard.Y + 0.1f);
-
-                    // Draw vehicle's human friendly name.
-                    e.Graphics.DrawText("NAME".PadRight(15) + "\t" + CurrentVehicle.Model, Dashboard.X, Dashboard.Y + 0.12f);
-
-                    // Draw drain per second speed (how faster the fuel is draining per second).
-                    e.Graphics.DrawText("DRAIN/Sec".PadRight(15) + "\t" + DrainSpeed, Dashboard.X, Dashboard.Y + 0.14f);
-
-                    // Draw vehicle doors status.
-                    e.Graphics.DrawText("DOOR".PadRight(15) + "\t" + ((CurrentVehicle.DoorLock == DoorLock.None) ? "UNLOCKED" : ((CurrentVehicle.DoorLock == DoorLock.CanOpenFromInside) ? "OUT LOCK" : "FULL LOCK")), Dashboard.X, Dashboard.Y + 0.16f);
-                }
-
-                // Draw player position. X, Y and Z coordinates.
-                e.Graphics.DrawText("LOCATION", Dashboard.X, Dashboard.Y + 0.2f);
-                e.Graphics.DrawText(Player.Character.Position.X + ", " + Player.Character.Position.Y + ", " + Player.Character.Position.Z, Dashboard.X, Dashboard.Y + 0.22f);
-
-            }
-            catch (Exception crap)
-            {
-                Log("ERROR: devMode", crap.Message);
-            }
-        }
-        /// <summary>
-        /// run every frame, digitalMode
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void FuelScript_PerFrameDrawing_digitalMode(object sender, GTA.GraphicsEventArgs e)
-        {
-            try
-            {
-                // Take care of the lights and engine if player is refeuling..
-                if (Refueling)
-                {
-                    GTA.Native.Function.Call("FORCE_CAR_LIGHTS", CurrentVehicle, 0);
-                    CurrentVehicle.EngineRunning = false;
-                    // CurrentVehicle.HazardLightsOn = true;
-                }
-
-                // Set the scaling type.
-                e.Graphics.Scaling = FontScaling.ScreenUnits;
-
-                // If player is in a vehicle.
-                if (Player.Character.isInVehicle())
-                {
-                    // Draw fuel level.
-                    try
-                    {
-                        e.Graphics.DrawText("FUEL", Dashboard.X, Dashboard.Y, Color.Beige);
-                        e.Graphics.DrawText(
-                            Convert.ToInt32((float)CurrentVehicle.Metadata.Fuel).ToString(),
-                            Dashboard.X + 0.06f,
-                            Dashboard.Y,
-                            (CurrentVehicle.Metadata.Fuel <= CurrentVehicle.Metadata.Reserve)
-                                ? Color.Red
-                                : Color.Green);
-                    }
-                    catch { }
-
-                    // Draw vehicle speed.
-                    e.Graphics.DrawText("SPEED", Dashboard.X, Dashboard.Y + 0.03f);
-
-                    // If current vehicle is a boat, units needs to be converted to knots.
-                    if (CurrentVehicle.Model.isBoat)
-                    {
-                        e.Graphics.DrawText(Convert.ToInt32(CurrentVehicle.Speed * Knots).ToString(), Dashboard.X + 0.06f, Dashboard.Y + 0.03f);
-                        e.Graphics.DrawText("Knots", Dashboard.X + 0.09f, Dashboard.Y + 0.03f);
-
-                    }
-                    // If it's a normal vehicle, draw it in KPH, or MPH.
-                    else
-                    {
-                        e.Graphics.DrawText(Convert.ToInt32(CurrentVehicle.Speed * SpeedMultiplier).ToString(), Dashboard.X + 0.06f, Dashboard.Y + 0.03f);
-                        e.Graphics.DrawText((SpeedMultiplier == 3.6f) ? "KPH" : "MPH", Dashboard.X + 0.09f, Dashboard.Y + 0.03f);
-                    }
-                }
-            }
-            catch (Exception crap)
-            {
-                Log("ERROR: digitalMode", crap.Message);
-            }
-        }
-        /// <summary>
-        /// run every frame, digitalMode
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void FuelScript_PerFrameDrawing_classicMode(object sender, GTA.GraphicsEventArgs e)
+        private void FuelScript_PerFrameDrawing(object sender, GTA.GraphicsEventArgs e)
         {
             try
             {
@@ -1985,7 +1849,7 @@ namespace FuelScript
                                 ? ((Flashing < 5)
                                     ? GTA.ColorIndex.SmokeSilverPoly
                                     : (GTA.ColorIndex)35)
-                                : GTA.ColorIndex.SmokeSilverPoly, // at this point, if we have issues about performance the color can very well be select when any of the 3 conditions change in the first place
+                                : GTA.ColorIndex.SmokeSilverPoly,
                             FuelMeterFont);
 
                         // Draw fuel level status (such as "57%").
@@ -1997,7 +1861,7 @@ namespace FuelScript
                                 ? ((Flashing < 5)
                                     ? GTA.ColorIndex.SmokeSilverPoly
                                     : (GTA.ColorIndex)35)
-                                : GTA.ColorIndex.SmokeSilverPoly, // at this point, if we have issues about performance the color can very well be select when any of the 3 conditions change in the first place
+                                : GTA.ColorIndex.SmokeSilverPoly,
                             FuelMeterFont);
 
                         // Draw fuel level meter's black background.
@@ -2029,11 +1893,9 @@ namespace FuelScript
                                     ? (GTA.ColorIndex)1
                                     : (GTA.ColorIndex)35
                                 )
-                            : (GTA.ColorIndex)50); // at this point, if we have issues about performance the color can very well be select when any of the 3 conditions change in the first place
+                            : (GTA.ColorIndex)50);
 
                         // Controls the Flashinging when on reserved fuel.
-                        // Strange, but it won't flash if we used Flashing++;
-                        // It's not strange it is expected behaviour: Flashing++ uses the variable Flashing and updates it with 1. ++Flashing updates the variable with 1 and then uses it.
                         Flashing = (Flashing == 20) ? 0 : ++Flashing;
                     }
                     catch { }
