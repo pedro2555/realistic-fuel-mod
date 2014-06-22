@@ -91,7 +91,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Sandakelum.png" />
     <EmbeddedResource Include="Resources\resSound.wav" />
     <None Include="GTAIV.ico" />
     <Content Include="License.txt">
