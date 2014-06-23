@@ -44,6 +44,98 @@ namespace FuelScript
     // Main Class
     public class FuelScript : Script
     {
+        #region Variables and Properties
+        /// <summary>
+        /// Where to send data
+        /// </summary>
+        Guid ExtScriptGUID;
+        /// <summary>
+        /// Fuel meter styled font
+        /// </summary>
+        private GTA.Font FuelMeterFont = new GTA.Font(0.030f, FontScaling.ScreenUnits);
+        /// <summary>
+        /// Determines if the CurrentVehicle as already entered the reserve level.
+        /// </summary>
+        private bool OnReserve;
+        /// <summary>
+        /// Used for classic mode only.
+        /// </summary>
+        private float GaugeWidth;
+        /// <summary>
+        /// To keep track of the Flashinging sequence in reserve levels, this can probably be changed to a lower allocation later
+        /// </summary>
+        private int Flashing = 0;
+        /// <summary>
+        /// mps to knots
+        /// </summary>
+        private const float Knots = 1.94384449f;
+        /// <summary>
+        /// Determines if speed is shown in KPH or MPH
+        /// </summary>
+        private float SpeedMultiplier;
+        /// <summary>
+        /// The location of the dash board
+        /// </summary>
+        private PointF Dashboard;
+        /// <summary>
+        /// Holds the last vehicle the player has driven
+        /// </summary>
+        private Vehicle LastVehicle;
+        /// <summary>
+        /// Returns true if the player is refueling.
+        /// </summary>
+        private bool Refueling;
+        /// <summary>
+        /// Used to debt to the total money from the player's money value.
+        /// </summary>
+        private float RefuelAmount;
+        /// <summary>
+        /// Only used in devMode
+        /// </summary>
+        private float DrainSpeed;
+        /// <summary>
+        /// Current game, if aplicable.
+        /// </summary>
+        private Controller GamePad;
+        /// <summary>
+        /// Station names at the config file
+        /// </summary>
+        private string StationName;
+        /// <summary>
+        /// Keeps track of fuel bottles used
+        /// </summary>
+        private int UsedFuelBottles;
+        /// <summary>
+        /// How much times player can use emergency reserved fuel bottles
+        /// </summary>
+        private int MaxFuelBottles;
+        /// <summary>
+        /// How much one fuel bottle cost to refil it
+        /// </summary>
+        private float FuelBottleCost;
+        /// <summary>
+        /// Emergency fuel service vehicle
+        /// </summary>
+        private Vehicle ServiceVehicle;
+        /// <summary>
+        /// Emergency fuel service ped
+        /// </summary>
+        private Ped ServicePed;
+        /// <summary>
+        /// Emergency fuel service cost
+        /// </summary>
+        private float ServiceCost;
+        /// <summary>
+        /// Beta Watermark Texture (embedded)
+        /// </summary>
+        GTA.Texture BetaMark;
+        /// <summary>
+        /// Alias for Player.Character.CurrentVehicle
+        /// </summary>
+        private Vehicle CurrentVehicle
+        { get { return (Player.Character.isInVehicle()) ? Player.Character.CurrentVehicle : null; } }
+        #endregion
+
         /// <summary>
         /// Primary function and the constructor.
         /// RELEASE WARNING, SlimDX.dll should be placed on GTA root folder, NOT the scripts folder.
@@ -376,98 +468,6 @@ namespace FuelScript
             catch (Exception crap) { Log("ERROR: FuelScript", crap.Message); }
             #endregion
         }
-
-        #region Variables and Properties
-        /// <summary>
-        /// Where to send data
-        /// </summary>
-        Guid ExtScriptGUID;
-        /// <summary>
-        /// Fuel meter styled font
-        /// </summary>
-        private GTA.Font FuelMeterFont = new GTA.Font(0.030f, FontScaling.ScreenUnits);
-        /// <summary>
-        /// Determines if the CurrentVehicle as already entered the reserve level.
-        /// </summary>
-        private bool OnReserve;
-        /// <summary>
-        /// Used for classic mode only.
-        /// </summary>
-        private float GaugeWidth;
-        /// <summary>
-        /// To keep track of the Flashinging sequence in reserve levels, this can probably be changed to a lower allocation later
-        /// </summary>
-        private int Flashing = 0;
-        /// <summary>
-        /// mps to knots
-        /// </summary>
-        private const float Knots = 1.94384449f;
-        /// <summary>
-        /// Determines if speed is shown in KPH or MPH
-        /// </summary>
-        private float SpeedMultiplier;
-        /// <summary>
-        /// The location of the dash board
-        /// </summary>
-        private PointF Dashboard;
-        /// <summary>
-        /// Holds the last vehicle the player has driven
-        /// </summary>
-        private Vehicle LastVehicle;
-        /// <summary>
-        /// Returns true if the player is refueling.
-        /// </summary>
-        private bool Refueling;
-        /// <summary>
-        /// Used to debt to the total money from the player's money value.
-        /// </summary>
-        private float RefuelAmount;
-        /// <summary>
-        /// Only used in devMode
-        /// </summary>
-        private float DrainSpeed;
-        /// <summary>
-        /// Current game, if aplicable.
-        /// </summary>
-        private Controller GamePad;
-        /// <summary>
-        /// Station names at the config file
-        /// </summary>
-        private string StationName;
-        /// <summary>
-        /// Keeps track of fuel bottles used
-        /// </summary>
-        private int UsedFuelBottles;
-        /// <summary>
-        /// How much times player can use emergency reserved fuel bottles
-        /// </summary>
-        private int MaxFuelBottles;
-        /// <summary>
-        /// How much one fuel bottle cost to refil it
-        /// </summary>
-        private float FuelBottleCost;
-        /// <summary>
-        /// Emergency fuel service vehicle
-        /// </summary>
-        private Vehicle ServiceVehicle;
-        /// <summary>
-        /// Emergency fuel service ped
-        /// </summary>
-        private Ped ServicePed;
-        /// <summary>
-        /// Emergency fuel service cost
-        /// </summary>
-        private float ServiceCost;
-        /// <summary>
-        /// Beta Watermark Texture (embedded)
-        /// </summary>
-        GTA.Texture BetaMark;
-        /// <summary>
-        /// Alias for Player.Character.CurrentVehicle
-        /// </summary>
-        private Vehicle CurrentVehicle
-        { get { return (Player.Character.isInVehicle()) ? Player.Character.CurrentVehicle : null; } }
-        #endregion
 
         #region External Script Communication Functions
         /// <summary>
