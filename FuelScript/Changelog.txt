@@ -1,3 +1,30 @@
+VERSION 2.2.0.5 (July 24, 2013)
+
+NEW:	Fuel Steal Points! Now most garages, vehicle repair shops have fuels in stored for their use.
+		You can use same controls to steal fuel from them. But which will cause you to increase your
+		wanted level by several stars and also, nearby undercover police agents will shoot at you.
+		So, be quick and be smart.
+NEW:	Added 6+ fuel stealing points around Liberty City.
+NEW:	Dashboard Positioner, a tool you can use to get very precise coordinates to move your fuel
+		meter gauge. Now bundled with the release. You can find it in Tools folder.
+		Created by Pedro Rodrigues.
+NEW:	Added an internal method to check for updates from repository.
+CHANGE:	Changed version scheme to Major.Minor.Revision.Build format.
+FIX:	Indicator Mod compatibility patch.
+FIX:	Reserved fuel indicator sound is now plays correctly.
+FIX:	Fixed bus issue, which caused to crash the script when Niko gets back on, after using a
+		fuel bottle on the bus. Only buses was affected by this issue. Fix by Pedro Rodrigues.
+FIX:	Wrapped KeyDown function's sub-events with try-catch to avoid most common crashes.
+FIX:	Used "IS_PLAYER_FREE_FOR_AMBIENT_TASK" native call on multiple locations where player should
+		wait for previous ambient task to be completed, to avoid most animation related crashes.
+		Fix originally provided by Pedro Rodrigues.
+FIX:	Fixed emergency fuel service's ped animations and delays where he just stares at the vehicle
+		instead fixing it faster. May not be fixed on some cases, such as when running on
+		lower FPS than game's playable FPS.
+FIX:	Fix for letting player steal fuel bottles from fuel stealing points. Player only can steal
+		liquid fuel as it is only. No fuel bottles.
+FIX:	Fix to fuel gauge flashing to cause less impact on performence.
+
 VERSION 2.2.0.4 (July 10, 2013)
 
 NEW:	Emergency Fuel Service! Call to GET-555-FUEL (438-555-3835) or press K (if phone
