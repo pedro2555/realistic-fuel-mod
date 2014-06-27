@@ -244,9 +244,6 @@ namespace FuelScript
             // Attach Graphics Event Handler to draw onscreen graphics and elements
             this.PerFrameDrawing += new GraphicsEventHandler(FuelScript_PerFrameDrawing);
 
-            // Log which display panel mode was chosen by the player.
-            Log("FuelScript", "Fuel display panel has been selected as: " + Settings.GetValueString("MODE", "DASHBOARD", "CLASSIC").ToUpper().Trim() + " display mode.");
-
             // Bind the keydown function.
             this.KeyDown += new GTA.KeyEventHandler(FuelScript_KeyDown);
 
