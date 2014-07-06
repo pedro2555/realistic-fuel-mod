@@ -1,24 +1,48 @@
+FLAG LEGEND
+
+NEW - New feature, CHANGE - Changed feature, FIX - Fixed feature or bug,
+RMVD - Removed feature, NOTE - A basic note.
+
+VERSION 2.2.0.6 (TBA #######)
+
+NEW:	Engine backfiring when injecting the fuel bottles sometimes, kind of makes it more realistic.
+CHANGE:	"BOTTLEUSINGTEXT" message is now a dynamic text which changes according to the number of
+		fuel bottles left. It'll inform you when you use your last fuel bottle.
+CHANGE:	Messaging styles has been changed to more efficient and basic style.
+FIX:	Fixed a bug when player presses and directional keys when Niko get out of the vehicle to inject
+		a fuel bottle, which makes it impossible to get back on the vehicle by using Game.CanControlCharacter
+		(but which will also lock your camera until the animation completes).
+RMVD:	Previous 3 display modes removed and now there's only one display mode which
+		previously called "Classical".
+NOTE:	Version scheme's minor now have the subversion, for example 2.2.0.6 version becomes on
+		the compiled assembly to 2.206.Rev.Build.
+
 VERSION 2.2.0.5 (July 24, 2013)
 
 NEW:	Fuel Steal Points! Now most garages, vehicle repair shops have fuels in stored for their use.
 		You can use same controls to steal fuel from them. But which will cause you to increase your
 		wanted level by several stars and also, nearby undercover police agents will shoot at you.
 		So, be quick and be smart.
-NEW:	Added 6+ fuel stealing points around Liberty City.
+NEW:	Added 6+ fuel stealing points around Liberty City, and more to come. (Thanks to yoshiko, for
+		providing a lot of locations)
 NEW:	Dashboard Positioner, a tool you can use to get very precise coordinates to move your fuel
-		meter gauge. Now bundled with the release. You can find it in Tools folder.
-		Created by Pedro Rodrigues.
+		meter gauge. Now bundled with the release. Created by Pedro Rodrigues.
 NEW:	Added an internal method to check for updates from repository.
+NEW:	Added a new fuel station that somehow we've never noticed.
+NEW:	Optional parameter DISPLAY added to all fuel station types. Read stations section at INI file.
 CHANGE:	Changed version scheme to Major.Minor.Revision.Build format.
+CHANGE: Big changes in the message display system, might still not be perfect.
+CHANGE: Fuel bottles now give you 1/2 of full tank capacity, instead of 1/3.
 FIX:	Indicator Mod compatibility patch.
 FIX:	Reserved fuel indicator sound is now plays correctly.
-FIX:	Fixed bus issue, which caused to crash the script when Niko gets back on, after using a
-		fuel bottle on the bus. Only buses was affected by this issue. Fix by Pedro Rodrigues.
+FIX:	Fixed potential script crash when using fuel bottle in a bus, which caused to crash the
+		script when Niko gets back on, after using a fuel bottle on the bus. Only buses was affected
+		by this issue. Fix by Pedro Rodrigues.
 FIX:	Wrapped KeyDown function's sub-events with try-catch to avoid most common crashes.
 FIX:	Used "IS_PLAYER_FREE_FOR_AMBIENT_TASK" native call on multiple locations where player should
 		wait for previous ambient task to be completed, to avoid most animation related crashes.
 		Fix originally provided by Pedro Rodrigues.
-FIX:	Fixed emergency fuel service's ped animations and delays where he just stares at the vehicle
+FIX:	Minor fixes to Emergency Fuel Service animations, where he just stares at the vehicle
 		instead fixing it faster. May not be fixed on some cases, such as when running on
 		lower FPS than game's playable FPS.
 FIX:	Fix for letting player steal fuel bottles from fuel stealing points. Player only can steal

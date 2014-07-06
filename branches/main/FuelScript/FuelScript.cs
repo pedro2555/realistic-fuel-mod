@@ -648,7 +648,10 @@ namespace FuelScript
                             }
 
                             // Lock the doors to avoid from player getting out.
-                            CurrentVehicle.DoorLock = DoorLock.ImpossibleToOpen;
+                            // CurrentVehicle.DoorLock = DoorLock.ImpossibleToOpen;
+
+                            // Disable player controls.
+                            Player.CanControlCharacter = false;
 
                             // Fuel Service Drive To position.
                             Vector3 DriveToPosition = CurrentVehicle.GetOffsetPosition(new Vector3(5.0f, 0.0f, 0.0f));
@@ -657,7 +660,8 @@ namespace FuelScript
                             Vector3 HoodPosition = CurrentVehicle.GetOffsetPosition(new Vector3(0.0f, 3.0f, 0.0f));
 
                             // Create a fuel bowser.
-                            ServiceVehicle = World.CreateVehicle(new Model("packer"), World.GetNextPositionOnStreet(Player.Character.Position.Around(100.0f)));
+                            // ServiceVehicle = World.CreateVehicle(new Model("packer"), World.GetNextPositionOnStreet(Player.Character.Position.Around(100.0f)));
+                            ServiceVehicle = World.CreateVehicle(new Model("pony"), World.GetNextPositionOnStreet(Player.Character.Position.Around(100.0f)));
 
                             // Wait until it creates.
                             while (!ServiceVehicle.Exists())
@@ -666,10 +670,12 @@ namespace FuelScript
                             }
 
                             // Only fuel tank required, hide other extra parts.
+                            /*
                             ServiceVehicle.Extras(1).Enabled = true;
                             ServiceVehicle.Extras(3).Enabled = false;
                             ServiceVehicle.Extras(5).Enabled = false;
-
+                            */
+                            
                             // Make proof to all dangers.
                             ServiceVehicle.MakeProofTo(true, true, true, true, true);
 
@@ -707,7 +713,7 @@ namespace FuelScript
                             ServicePed.Invincible = true;
 
                             // Block his permenent events.
-                            ServicePed.BlockPermanentEvents = true;
+                            // ServicePed.BlockPermanentEvents = true;
 
                             // Respect the player.
                             ServicePed.ChangeRelationship(RelationshipGroup.Player, Relationship.Respect);
@@ -720,9 +726,6 @@ namespace FuelScript
 
                             // Keep focused to the new tasks.
                             ServicePed.Task.AlwaysKeepTask = true;
-
-                            // Stay on new tasks until we clear them again.
-                            ServicePed.Task.Wait(-1);
 
                             // Load all paths nodes so the ped can find paths easily.
                             Game.LoadAllPathNodes = true;
@@ -740,7 +743,7 @@ namespace FuelScript
                             }
 
                             // Drive to the scene.
-                            ServicePed.Task.DriveTo(DriveToPosition, 15.0f, false, true);
+                            ServicePed.Task.DriveTo(DriveToPosition, 10.0f, false, true);
 
                             // Show after creating required objects.
                             if (Settings.GetValueBool("EMERGENCYONWAYTEXT", "TEXTS", true))
@@ -751,27 +754,28 @@ namespace FuelScript
                             Log("PhoneNumberHandler", "Player called to the emergency fuel services.");
 
                             // Wait until he gets near with his vehicle.
-                            while (!GTA.Native.Function.Call<bool>("IS_PLAYER_FREE_FOR_AMBIENT_TASK", ServicePed))
+                            while (ServiceVehicle.Position.DistanceTo(Player.Character.Position) > 15.0f)
                             {
                                 Wait(100);
                             }
 
-                            // That's enough, get him out of vehicle.
+                            // Stop the engine to and get him out.
+                            ServiceVehicle.EngineRunning = false;
                             ServicePed.Task.LeaveVehicle(ServiceVehicle, true);
 
                             // Wait until he done exiting the vehicle.
-                            while (!GTA.Native.Function.Call<bool>("IS_PLAYER_FREE_FOR_AMBIENT_TASK", ServicePed))
+                            while (ServicePed.isInVehicle())
                             {
-                                Wait(100);
+                                Wait(200);
                             }
 
                             // Run to the hood of the target vehicle.
-                            ServicePed.Task.RunTo(HoodPosition, false);
+                            ServicePed.Task.RunTo(HoodPosition, true);
 
                             // Wait until he reaches there.
-                            while (!GTA.Native.Function.Call<bool>("IS_PLAYER_FREE_FOR_AMBIENT_TASK", ServicePed))
+                            while (ServicePed.Position.DistanceTo(HoodPosition) > 1.5f)
                             {
-                                Wait(100);
+                                Wait(200);
                             }
 
                             // Show when the service agent is near the player.
@@ -782,12 +786,7 @@ namespace FuelScript
 
                             // Turn to our vehicle's side.
                             ServicePed.Task.TurnTo(CurrentVehicle.Position);
-
-                            // Wait until he done turning.
-                            while (!GTA.Native.Function.Call<bool>("IS_PLAYER_FREE_FOR_AMBIENT_TASK", ServicePed))
-                            {
-                                Wait(100);
-                            }
+                            Wait(500);
 
                             // Open the hood.
                             ServicePed.Task.PlayAnimation(new AnimationSet("amb@bridgecops"), "open_boot", 4.0f);
@@ -800,9 +799,9 @@ namespace FuelScript
                             ServicePed.Task.PlayAnimation(new AnimationSet("misstaxidepot"), "workunderbonnet", 4.0f);
 
                             // Wait until Niko done repairing the vehicle.
-                            while (!GTA.Native.Function.Call<bool>("IS_PLAYER_FREE_FOR_AMBIENT_TASK", ServicePed))
+                            while (!ServicePed.isIdle)
                             {
-                                Wait(100);
+                                Wait(200);
                             }
 
                             // Close the hood.
@@ -841,25 +840,19 @@ namespace FuelScript
                             Log("PhoneNumberHandler", "Player got " + Convert.ToInt32(CurrentVehicle.Metadata.Fuel) + " litre(s) of fuel and " + MaxFuelBottles + " fuel bottles billed $" + ServiceCost + ".");
 
                             // Unlock the doors.
-                            CurrentVehicle.DoorLock = DoorLock.None;
+                            // CurrentVehicle.DoorLock = DoorLock.None;
 
-                            // Block permenent events for the final tasks.
-                            ServicePed.BlockPermanentEvents = true;
-
-                            // Clear previous tasks.
-                            ServicePed.Task.ClearAll();
-
-                            // Focus on final tasks.
-                            ServicePed.Task.AlwaysKeepTask = true;
-
-                            // Wait until Niko done doing previous tasks given by script.
-                            while (!GTA.Native.Function.Call<bool>("IS_PLAYER_FREE_FOR_AMBIENT_TASK", ServicePed))
-                            {
-                                Wait(100);
-                            }
+                            // Enable player controls back again.
+                            Player.CanControlCharacter = true;
 
                             // Get back on his vehicle.
                             ServicePed.Task.EnterVehicle(ServiceVehicle, VehicleSeat.Driver);
+
+                            // Wait until he gets back on the vehicle.
+                            while (!ServicePed.isInVehicle())
+                            {
+                                Wait(200);
+                            }
 
                             // Delete the blip.
                             ServiceBlip.Delete();
@@ -870,8 +863,7 @@ namespace FuelScript
                             // Run all over the city as you wish!
                             ServicePed.Task.CruiseWithVehicle(ServiceVehicle, 35.0f, true);
 
-                            // We don't need him or his vehicle?
-                            // Really? Who does want a bowser? :D
+                            // We don't need him or his vehicle...
                             ServicePed.NoLongerNeeded();
                             ServiceVehicle.NoLongerNeeded();
                         }
@@ -1094,12 +1086,12 @@ namespace FuelScript
                     // Log("DrainFuel", "Player ran out of fuel on vehicle: " + CurrentVehicle.Name.ToString() + " as " + CurrentVehicle.Metadata.Fuel + " fuel units and " + CurrentVehicle.Metadata.Reserve + " reserve units.");
 
                     // Mass angry when Niko lost a vehicle...
-                    // NOTE: Something weired happening, exact thing runs. But last only around a second!
                     /*
                     if (CurrentVehicle.Metadata.Fuel == 0 && UsedFuelBottles == MaxFuelBottles)
                     {
-                        Player.Character.SayAmbientSpeech("HIGH_FALL");
-                        GTA.Native.Function.Call("SET_CAM_SHAKE", Game.DefaultCamera, true, 10);
+                        Player.Character.SayAmbientSpeech("GENERIC_CURSE");
+                        Wait(2000);
+                        // GTA.Native.Function.Call("SET_CAM_SHAKE", Game.DefaultCamera, true, 10);
                     }
                     */
                 }
@@ -1124,13 +1116,19 @@ namespace FuelScript
                             Game.DisplayText("Welcome to " + Settings.GetValueString("NAME", StationName + isAtFuelStation(), "Unknown") + " Fueling Station " + isAtFuelStation() + ". We offer fuel just for $" + Settings.GetValueFloat("PRICE", "STATION" + isAtFuelStation(), 6.99f) + " per litre.\nHold " + Settings.GetValueKey("REFUELKEY", "KEYS", Keys.E) + " button to purchase full tank fuel which costs $" + Convert.ToInt32(((CurrentVehicle.Metadata.MaxTank - CurrentVehicle.Metadata.Fuel) * Settings.GetValueFloat("PRICE", StationName + isAtFuelStation(), 6.99f))) + " at this moment." + (((MaxFuelBottles - UsedFuelBottles) < MaxFuelBottles) ? "\nPress " + Settings.GetValueKey("BOTTLEBUYKEY", "KEYS", Keys.B) + " to buy a fuel bottle for $" + FuelBottleCost + ". You can buy " + UsedFuelBottles + " more bottle" + ((UsedFuelBottles == 1) ? "" : "s") + "." : ""));
                         }
                     }
-                    else
-                    {
-                        GTA.Native.Function.Call("CLEAR_PRINTS");
-                    }
 
                     // Writing too much lines at the log is really annoying everytime you cross a square foot of a station!
                     // Log("DrainFuel", "Player entered to: " + Settings.GetValueString("NAME", station + isAtFuelStation(), "Unknown") + " Fueling Station " + isAtFuelStation() + " zone with vehicle: " + CurrentVehicle.Name.ToString() + ".");
+                }
+                // If player drove out of station, try to clear messages.
+                else
+                {
+                    try
+                    {
+                        // Call the native function to clear messages
+                        GTA.Native.Function.Call("CLEAR_PRINTS");
+                    }
+                    catch (Exception crap) { Log("ERROR: DrainFuel[ClearPrints]", crap.Message); }
                 }
 
                 #endregion
@@ -1230,9 +1228,6 @@ namespace FuelScript
                         Player.Money -= Convert.ToInt32((RefuelAmount * Settings.GetValueFloat("PRICE", StationName + isAtFuelStation(), 6.99f)));
                     }
 
-                    // If player should get a wanted level by refueling vehicle with a goverment property.
-                    Player.WantedLevel = (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0 && Player.WantedLevel < Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0)) ? Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) : Player.WantedLevel;
-
                     // Attack nearby peds to player for stealing fuel.
                     // Only affect for ground vehicles. It's not like people will crawl buildings to attack helicopters nor swim through ocean to attack boats? :D
                     if (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0 && (CurrentVehicle.Model.isCar || CurrentVehicle.Model.isBike))
@@ -1244,11 +1239,9 @@ namespace FuelScript
                             if (AttackingPed != Player.Character)
                             {
                                 // Become our mission character.
-                                /*
                                 AttackingPed.BecomeMissionCharacter();
                                 AttackingPed.BlockGestures = true;
-                                AttackingPed.BlockPermanentEvents = true;
-                                */
+                                // AttackingPed.BlockPermanentEvents = true;
 
                                 // Woah? Really? In our turf?
                                 AttackingPed.SayAmbientSpeech("SURPRISED");
@@ -1257,14 +1250,19 @@ namespace FuelScript
                                 AttackingPed.Weapons.MP5.Ammo = 800;
 
                                 // Draw MP5 out of jackets... Muhahhha...
-                                AttackingPed.Weapons.Select(Weapon.SMG_MP5);
+                                // AttackingPed.Weapons.Select(Weapon.SMG_MP5);
+                                AttackingPed.Weapons.MP5.Select();
 
                                 // They hate me.
                                 AttackingPed.ChangeRelationship(RelationshipGroup.Player, Relationship.Hate);
 
+                                // And they support the Police!
+                                AttackingPed.ChangeRelationship(RelationshipGroup.Cop, Relationship.Companion);
+
                                 // Make him natorious.
-                                AttackingPed.RelationshipGroup = RelationshipGroup.Criminal;
-                                AttackingPed.CantBeDamagedByRelationshipGroup(RelationshipGroup.Criminal, false);
+                                AttackingPed.RelationshipGroup = RelationshipGroup.Cop;
+                                AttackingPed.CantBeDamagedByRelationshipGroup(RelationshipGroup.Cop, false);
+                                AttackingPed.SetDefensiveArea(AttackingPed.Position, 50.0f);
 
                                 // Kill enemies first!
                                 AttackingPed.PriorityTargetForEnemies = true;
@@ -1277,7 +1275,7 @@ namespace FuelScript
                                 AttackingPed.BlockWeaponSwitching = true;
 
                                 // Don't follow the player and attack.
-                                AttackingPed.WillUseCarsInCombat = false;
+                                AttackingPed.WillUseCarsInCombat = true;
 
                                 // Don't let police bust them, because it's their property.
                                 AttackingPed.WantedByPolice = false;
@@ -1287,11 +1285,11 @@ namespace FuelScript
 
                                 // New tasks first.
                                 AttackingPed.Task.AlwaysKeepTask = true;
+                                AttackingPed.Task.Wait(-1);
 
                                 // SHOOT HIM!
-                                // AttackingPed.Task.AimAt(Player, 10000);
-                                AttackingPed.Task.ShootAt(Player, ShootMode.Burst);
-                                AttackingPed.Task.FightAgainst(Player);
+                                AttackingPed.Task.ShootAt(Player.Character, ShootMode.Continuous, 100000);
+                                AttackingPed.CowerInsteadOfFleeing = true;
 
                                 // Wait until attacking peds stop shooting at player
                                 /*
@@ -1306,6 +1304,9 @@ namespace FuelScript
                             }
                         }
                     }
+
+                    // If player should get a wanted level by refueling vehicle with a goverment property.
+                    Player.WantedLevel = (Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) > 0 && Player.WantedLevel < Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0)) ? Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) : Player.WantedLevel;
 
                     // Set as not refeuling... again...
                     Refueling = false;
@@ -1528,6 +1529,10 @@ namespace FuelScript
                         // If player has at least one fuel bottle.
                         if ((MaxFuelBottles - UsedFuelBottles) >= 1)
                         {
+                            // Disable player controls until we enable then again later
+                            // to avoid from timed animation glitches.
+                            Player.CanControlCharacter = false;
+                            
                             // Say something as clue?
                             Player.Character.SayAmbientSpeech("START_CAR_PANIC");
                             Wait(2000);
@@ -1539,18 +1544,18 @@ namespace FuelScript
                             // Focus on current tasks...
                             Player.Character.Task.AlwaysKeepTask = true;
 
-                            // Get out of vehicle.
                             // If Niko is driving a Helicopter or a Boat we don't want to get him out to inject a fuel bottle, do we?
                             // That would kill Niko... lol, it could be fun though :D
                             // Added a fix for the crash when injecting fuel bottles to a bus by letting Niko do it inside!
                             if (CurrentVehicle.Model.isCar || CurrentVehicle.Model.isBike)
                             {
+                                // Get out of vehicle.
                                 Player.Character.Task.LeaveVehicle(CurrentVehicle, true);
 
                                 // Let him know that Niko doing a magic!
                                 if (Settings.GetValueBool("BOTTLEUSINGTEXT", "TEXTS", true))
                                 {
-                                    ShowMessage("You're now using one of your emergency fuel bottles on this vehicle.", 10000);
+                                    ShowMessage("You're now using " + ((UsedFuelBottles == 4) ? "your last fuel bottle." : "one of your emergency fuel bottles."), 10000);
                                 }
 
                                 // Wait until Niko got to the position.
@@ -1650,6 +1655,9 @@ namespace FuelScript
                                 CurrentVehicle.HazardLightsOn = false;
                             }
 
+                            // Enable player controls back again...
+                            Player.CanControlCharacter = true;
+
                             // Relax a while...
                             Wait(2000);
 
@@ -1677,7 +1685,7 @@ namespace FuelScript
                 {
                     // If player haven't exceeded max fuel bottles limit and player is in vehicle at a fueling station.
                     // And make sure it isn't a fuel stealing point, because if so, player shouldn't allowed to steal fuel bottles. Just normal fuel only...
-                    if ((MaxFuelBottles - UsedFuelBottles) < MaxFuelBottles && Player.Character.isInVehicle() && isAtFuelStation() > -1 && Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) < 0)
+                    if ((MaxFuelBottles - UsedFuelBottles) < MaxFuelBottles && Player.Character.isInVehicle() && isAtFuelStation() > -1 && Settings.GetValueInteger("STARS", StationName + isAtFuelStation(), 0) == 0)
                     {
                         // Does the player have enough money to buy a fuel bottle?
                         if (Player.Money >= Convert.ToInt32(FuelBottleCost))
@@ -1813,7 +1821,7 @@ namespace FuelScript
                                 float FuelAvailability = (Convert.ToInt32(CurrentVehicle.Metadata.Fuel) * 100) / Convert.ToInt32(CurrentVehicle.Metadata.MaxTank);
 
                                 // When player gets into a vehicle, so it's status.
-                                ShowMessage("This vehicle currently holds " + String.Format("{0:00}%", FuelAvailability) + " fuel left in it's " + Convert.ToInt32(CurrentVehicle.Metadata.MaxTank) + " litre(s) tank.\n" + (((MaxFuelBottles - UsedFuelBottles) >= 1)
+                                Game.DisplayText("This vehicle currently holds " + String.Format("{0:00}%", FuelAvailability) + " fuel left.\n" + (((MaxFuelBottles - UsedFuelBottles) >= 1)
                                     ? "You have " + (MaxFuelBottles - UsedFuelBottles) + " emergency fuel bottle" + (((MaxFuelBottles - UsedFuelBottles) == 1) ? "" : "s") + " left."
                                     : "You have no emergency fuel bottles left."), 10000);
                             }
